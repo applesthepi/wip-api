@@ -1,4 +1,5 @@
 mod terrain;
+use nalgebra::{Vector2, vector};
 pub use terrain::*;
 mod floor;
 pub use floor::*;
@@ -10,6 +11,50 @@ mod structure;
 pub use structure::*;
 mod item;
 pub use item::*;
+
+use crate::PT_MOD_WCOUNT;
+
+#[derive(Debug, Clone, Copy)]
+pub struct TilePosition {
+	pub chunk_coordinate: Vector2<i32>,
+	pub tile_coordinate: Vector2<i32>,
+}
+
+impl TilePosition {
+	pub fn new(
+		chunk_coordinate: Vector2<i32>,
+		tile_coordinate: Vector2<i32>,
+	) -> Self {
+		Self {
+			chunk_coordinate,
+			tile_coordinate,
+		}
+	}
+
+	pub fn offset_tile(
+		mut self,
+		tile_offset: Vector2<i32>,
+	) -> Self {
+		self.tile_coordinate += tile_offset;
+		let chunk_offset: Vector2<i32> = vector![
+			self.tile_coordinate.x / (PT_MOD_WCOUNT as i32),
+			self.tile_coordinate.y / (PT_MOD_WCOUNT as i32)
+		];
+		self.tile_coordinate = vector![
+			self.tile_coordinate.x.rem_euclid(PT_MOD_WCOUNT as i32),
+			self.tile_coordinate.y.rem_euclid(PT_MOD_WCOUNT as i32)
+		];
+		self
+	}
+
+	pub fn get_linear_tile_position(
+		&self,
+	) -> usize {
+		debug_assert!(self.tile_coordinate.x >= 0);
+		debug_assert!(self.tile_coordinate.y >= 0);
+		(self.tile_coordinate.y as usize * PT_MOD_WCOUNT) + self.tile_coordinate.x as usize
+	}
+}
 
 // TODO: covor (like filth/rubble etc.)
 pub struct WorldTile {
