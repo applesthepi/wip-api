@@ -7,8 +7,10 @@ pub use version::*;
 mod registry;
 pub use registry::*;
 
+pub const PT_LOD_DEPTH: u32 = 3;
+
 /// How many tiles square there are per `PhysicalChunk`.
-pub const PT_MOD_WCOUNT: usize = 1024;
+pub const PT_MOD_WCOUNT: usize = 9usize.pow(PT_LOD_DEPTH);
 /// PT_MOD_WCOUNT squared
 pub const PT_MOD_SQUARED: usize = PT_MOD_WCOUNT * PT_MOD_WCOUNT;
 /// `PhysicalTree`'s `PhysicalChunk` cache count (no realloc chunks stored in cache)
