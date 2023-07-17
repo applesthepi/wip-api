@@ -1,3 +1,4 @@
+#[repr(C)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub struct Version {
 	pub major: u8,
@@ -19,6 +20,7 @@ impl Version {
 	}
 }
 
+#[repr(C)]
 pub enum RegisterStatus {
 	Success,
 	Error,

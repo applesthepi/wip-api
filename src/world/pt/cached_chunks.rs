@@ -1,7 +1,6 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use nalgebra::Vector2;
-use tokio::sync::RwLock;
 
 use crate::{PhysicalChunk, PT_CACHE_COUNT};
 

@@ -1,34 +1,25 @@
 mod tile;
+use std::sync::Arc;
+
 pub use tile::*;
 mod pt;
 pub use pt::*;
+mod lt;
+pub use lt::*;
+mod lt_mod;
+pub use lt_mod::*;
+
+use crate::ChunkGenerator;
 
 pub struct PhysicalWorld {
 	pub physical_tree: PhysicalTree,
+	pub lod_tree: LodTree,
 }
 
-impl PhysicalWorld {
-	// pub fn access_tile(
-	// 	&self,
-	// 	tile_position: &TilePosition,
-	// ) -> WorldTile {
-	// 	let linear_tile_position = tile_position.get_linear_tile_position();
-	// 	let chunk = self.physical_tree.cached().chunks().blocking_read().iter().find(
-	// 		|(chunk_coordinate,
-	// 			physical_chunk,
-	// 		)|
-	// 		*chunk_coordinate == tile_position.chunk_coordinate
-	// 	);
-	// 	if let Some(chunk) = chunk {
-	// 		chunk.1.blocking_read().tiles[linear_tile_position]
-	// 	} else {
-	// 		drop(chunk);
-	// 		panic!("not impl or tile {}, {} does not exist for chunk {}, {}",
-	// 			tile_position.tile_coordinate.x,
-	// 			tile_position.tile_coordinate.y,
-	// 			tile_position.chunk_coordinate.x,
-	// 			tile_position.chunk_coordinate.y
-	// 		);
-	// 	}
-	// }
+impl PhysicalWorld {	
+}
+
+pub struct ActiveWorld {
+	pub physical_world: PhysicalWorld,
+	pub chunk_generator: Arc<dyn ChunkGenerator>,
 }
