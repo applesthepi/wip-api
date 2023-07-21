@@ -86,13 +86,15 @@ impl Default for WorldTile {
 impl WorldTile {
 	pub fn get_high_terrain(
 		&self,
-	) -> usize {
+	) -> Option<usize> {
 		for (i, x) in self.terrain.iter().enumerate() {
 			if x.mod_terrain.is_none() {
-				debug_assert!(i > 0);
-				return i - 1;
+				if i == 0 {
+					return None;
+				}
+				return Some(i - 1);
 			}
 		}
-		self.terrain.len() - 1
+		Some(self.terrain.len() - 1)
 	}
 }
