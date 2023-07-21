@@ -1,5 +1,6 @@
 use crate::ModItem;
 
+#[repr(C)]
 pub struct TileItem {
 	pub mod_item: Option<Box<dyn ModItem>>,
 }

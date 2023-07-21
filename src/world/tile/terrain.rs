@@ -1,5 +1,6 @@
 use crate::ModTerrain;
 
+#[repr(C)]
 pub struct TileTerrain {
 	pub mod_terrain: Option<Box<dyn ModTerrain>>,
 }
