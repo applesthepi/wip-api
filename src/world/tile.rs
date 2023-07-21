@@ -60,25 +60,25 @@ impl TilePosition {
 
 // TODO: covor (like filth/rubble etc.)
 pub struct WorldTile {
-	pub terrain: [TileTerrain; 4],
-	pub floor: TileFloor,
-	pub roof: TileRoof,
-	pub building: [TileBuilding; 16],
-	pub structure: TileStructure,
-	pub covor: [TileCovor; 16],
-	pub item: TileItem,
+	pub terrain: [Option<TileTerrain>; 4],
+	pub floor: Option<TileFloor>,
+	pub roof: Option<TileRoof>,
+	pub building: [Option<TileBuilding>; 16],
+	pub structure: Option<TileStructure>,
+	pub covor: [Option<TileCovor>; 16],
+	pub item: Option<TileItem>,
 }
 
 impl Default for WorldTile {
 	fn default() -> Self {
 		Self {
-			terrain: [(); 4].map(|_| TileTerrain::default()),
-			floor: TileFloor::default(),
-			roof: TileRoof::default(),
-			building: [TileBuilding::default(); 16],
-			structure: TileStructure::default(),
-			covor: [TileCovor::default(); 16],
-			item: TileItem::default(),
+			terrain: [(); 4].map(|_| None),
+			floor: None,
+			roof: None,
+			building: [None; 16],
+			structure: None,
+			covor: [None; 16],
+			item: None,
 		}
 	}
 }
@@ -88,7 +88,7 @@ impl WorldTile {
 		&self,
 	) -> Option<usize> {
 		for (i, x) in self.terrain.iter().enumerate() {
-			if x.mod_terrain.is_none() {
+			if x.is_none() {
 				if i == 0 {
 					return None;
 				}
