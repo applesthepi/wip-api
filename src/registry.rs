@@ -4,6 +4,8 @@ mod block;
 pub use block::*;
 mod mod_terrain;
 pub use mod_terrain::*;
+mod mod_item;
+pub use mod_item::*;
 
 pub struct Registry {
 	pub blocks: HashMap<String, Arc<RegistryBlock>>,

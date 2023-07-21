@@ -11,6 +11,8 @@ mod structure;
 pub use structure::*;
 mod item;
 pub use item::*;
+mod covor;
+pub use covor::*;
 
 use crate::PT_MOD_WCOUNT;
 
@@ -63,6 +65,8 @@ pub struct WorldTile {
 	pub roof: TileRoof,
 	pub building: [TileBuilding; 16],
 	pub structure: TileStructure,
+	pub covor: [TileCovor; 16],
+	pub item: TileItem,
 }
 
 impl Default for WorldTile {
@@ -73,6 +77,8 @@ impl Default for WorldTile {
 			roof: TileRoof::default(),
 			building: [TileBuilding::default(); 16],
 			structure: TileStructure::default(),
+			covor: [TileCovor::default(); 16],
+			item: TileItem::default(),
 		}
 	}
 }
