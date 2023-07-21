@@ -9,6 +9,6 @@ pub struct ModItemReg {
 
 pub trait ModItem {
 	fn reg(
-		&self,
+		&mut self,
 	) -> ModItemReg;
 }

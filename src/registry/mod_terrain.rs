@@ -6,6 +6,6 @@ pub struct ModTerrainReg {
 
 pub trait ModTerrain {
 	fn reg(
-		&self,
+		&mut self,
 	) -> ModTerrainReg;
 }
