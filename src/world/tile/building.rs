@@ -1,4 +1,3 @@
-#[derive(Default, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct TileBuilding {
-	pub idx: u64,
 }

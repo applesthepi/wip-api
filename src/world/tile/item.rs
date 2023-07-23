@@ -1,18 +1,25 @@
 use nalgebra::{vector, Vector3};
 
-use crate::ModItem;
+#[derive(Clone, Copy)]
+pub enum ICState {
+	Singular,
+	Bolder,
+	Rock,
+	Gravel,
+}
 
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct TileItem {
-	// pub mod_item: Option<Box<dyn ModItem>>,
 	pub color: Vector3<f32>,
+	pub ic_state: ICState,
 }
 
 impl Default for TileItem {
 	fn default() -> Self {
 		Self {
-			// mod_item: None,
 			color: vector![1.0, 1.0, 1.0],
+			ic_state: ICState::Singular,
 		}
 	}
 }

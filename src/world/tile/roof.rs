@@ -1,4 +1,3 @@
-#[derive(Default)]
+#[derive(Clone, Copy)]
 pub struct TileRoof {
-	
 }
