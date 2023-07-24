@@ -14,7 +14,7 @@ pub use item::*;
 mod covor;
 pub use covor::*;
 
-use crate::PT_MOD_WCOUNT;
+use crate::{PT_MOD_WCOUNT, RTTerrain, RTFloor, RTRoof, RTStructure, RTItem, RTCovor, RTBuilding};
 
 #[derive(Debug, Clone, Copy)]
 pub struct TilePosition {
@@ -60,13 +60,13 @@ impl TilePosition {
 
 // TODO: covor (like filth/rubble etc.)
 pub struct WorldTile {
-	pub terrain: [Option<TileTerrain>; 4],
-	pub floor: Option<TileFloor>,
-	pub roof: Option<TileRoof>,
-	pub building: [Option<TileBuilding>; 16],
-	pub structure: Option<TileStructure>,
-	pub covor: [Option<TileCovor>; 16],
-	pub item: Option<TileItem>,
+	pub terrain: [Option<RTTerrain>; 4],
+	pub floor: Option<RTFloor>,
+	pub roof: Option<RTRoof>,
+	pub building: [Option<RTBuilding>; 16],
+	pub structure: Option<RTStructure>,
+	pub covor: [Option<RTCovor>; 16],
+	pub item: Option<RTItem>,
 }
 
 impl Default for WorldTile {
