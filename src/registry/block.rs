@@ -4,7 +4,7 @@ use crate::{WorldGenerator, ChunkGenerator};
 
 pub struct RegistryBlock {
 	pub world_generators: Vec<Arc<dyn WorldGenerator>>,
-	pub chunk_generators: Vec<Arc<dyn ChunkGenerator>>,
+	pub chunk_generators: Vec<Arc<dyn ChunkGenerator + Send + Sync>>,
 }
 
 impl RegistryBlock {

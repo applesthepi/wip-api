@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{ActiveWorld, PhysicalTree, PT_LOD_DEPTH, PT_MOD_WCOUNT};
+use crate::{PT_LOD_DEPTH, PT_MOD_WCOUNT};
 
 use super::lt_mod::LodTreeMod;
 
@@ -26,7 +26,6 @@ impl LodTree {
 
 	pub fn get_lod_chunk_colors(
 		&mut self,
-		physical_tree: &PhysicalTree,
 		lod_chunk_position: Vector2<i32>,
 		lod: u32,
 	) {

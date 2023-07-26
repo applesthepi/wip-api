@@ -2,7 +2,7 @@ use std::{rc::Rc, sync::Arc};
 
 use nalgebra::vector;
 
-use crate::{world::ActiveWorld, RenderLod, PT_MOD_SQUARED};
+use crate::{RenderLod, PT_MOD_SQUARED};
 
 pub struct LTMod {
 	pub render_lods: [RenderLod; PT_MOD_SQUARED],
