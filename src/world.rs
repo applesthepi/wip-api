@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, atomic::AtomicBool};
 
 use nalgebra::Vector2;
 
@@ -43,8 +43,39 @@ impl PhysicalWorld {
 				Ok(chunk.clone())
 			},
 			None => {
-				Err(GenerationRequest::Chunk(chunk_position))
+				Err(GenerationRequest::Chunk(chunk_position, None))
 			}
+		}
+	}
+
+	pub fn get_chunk_flagback(
+		&mut self,
+		chunk_position: ChunkPosition,
+	) -> Result<Arc<PhysicalChunk>, GenerationRequest> {
+		match self.cached_chunks.cached_chunks.iter().find(
+			|(in_chunk_position, _)|
+			*in_chunk_position == chunk_position.0
+		) {
+			Some((_, chunk)) => {
+				Ok(chunk.clone())
+			},
+			None => {
+				Err(GenerationRequest::Chunk(chunk_position, Some(Arc::new(AtomicBool::new(false)))))
+			}
+		}
+	}
+
+	pub fn operation(
+		&mut self,
+		world_operation: WorldOperation,
+	) {
+		match world_operation {
+			WorldOperation::SpawnedChunk(chunk_position, chunk, _) => {
+				self.cached_chunks.cached_chunks.push((
+					chunk_position.0,
+					chunk,
+				));
+			},
 		}
 	}
 }

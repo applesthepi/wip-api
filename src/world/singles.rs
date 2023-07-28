@@ -1,14 +1,14 @@
 use nalgebra::Vector2;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ChunkPosition(pub Vector2<i32>);
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TilePosition(pub Vector2<i32>, pub Vector2<i32>);
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PawnId(pub u32);
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ConstructionProgress(pub u32);
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GridDirection(pub Vector2<i8>);
 
 impl TilePosition {
