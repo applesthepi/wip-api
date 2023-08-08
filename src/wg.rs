@@ -9,8 +9,6 @@ mod version;
 pub use version::*;
 mod registry;
 pub use registry::*;
-mod external;
-pub use external::*;
 
 pub const PT_LOD_DEPTH: u32 = 3;
 
@@ -23,8 +21,8 @@ pub const PT_CACHE_COUNT: usize = 1_000;
 /// `PhysicalTree`'s `PhysicalChunk` storage count (no realloc chunks stored on disk)
 pub const PT_STORAGE_COUNT: usize = 1_000_000;
 
-#[repr(C)]
 #[derive(Debug)]
+#[repr(C)]
 pub struct Mod {
 	pub name: String,
 	pub mod_version: Version,
