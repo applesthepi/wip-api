@@ -1,6 +1,6 @@
 use crate::TileTerrain;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RTTerrain {
 	pub tile: TileTerrain,
 	pub selected: bool,
