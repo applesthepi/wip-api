@@ -9,6 +9,8 @@ mod version;
 pub use version::*;
 mod registry;
 pub use registry::*;
+mod external;
+pub use external::*;
 
 pub const PT_LOD_DEPTH: u32 = 3;
 
