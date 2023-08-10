@@ -12,6 +12,7 @@ pub enum ProtocolTerrainForm {
 
 #[derive(Clone)]
 pub struct ProtocolTerrain {
+	pub name: Option<String>,
 	pub rt: Option<RTTerrain>,
 	pub frequency: f32,
 	/// Form of terrain has additional configuration.
