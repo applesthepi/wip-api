@@ -9,3 +9,4 @@ path = "src/wg.rs"
 [dependencies]
 nalgebra = "0.31.4"
 tokio = { version = "1.29.1", features = ["full"] }
+noise = "0.8.2"

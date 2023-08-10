@@ -1,6 +1,6 @@
 use std::{sync::Arc, str::FromStr};
 
-use crate::{WorldGenerator, ChunkGenerator, Protocol};
+use crate::{WorldGenerator, ChunkGenerator, Protocol, ProtocolTerrain};
 
 pub struct RegistryBlock {
 	
@@ -34,4 +34,13 @@ impl RegistryBlock {
 			}),
 		}
 	}
+
+	pub fn register_terrain(
+		&mut self,
+		protocol_terrain: ProtocolTerrain,
+	) { unsafe {
+		self.protocol.as_mut().unwrap_unchecked().terrain.push(
+			protocol_terrain,
+		);
+	}}
 }
