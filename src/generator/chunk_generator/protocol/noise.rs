@@ -47,7 +47,10 @@ pub struct ProtocolNoise {
 	/// 	HEIGHT: 0.0 is level zero, 1.0 is level five.
 	/// 	VALID:  <0.5 is none, >0.5 is some.
 	/// )
-	pub maps: Vec<(Arc<dyn NoiseProxy>, Arc<dyn NoiseProxy>)>,
+	pub maps: Vec<(
+		Arc<dyn NoiseProxy + Send + Sync>,
+		Arc<dyn NoiseProxy + Send + Sync>,
+	)>,
 }
 
 impl Debug for ProtocolNoise {
