@@ -6,6 +6,10 @@ use crate::{PhysicalWorld, PhysicalChunk};
 
 mod protocol;
 pub use protocol::*;
+mod sub_protocol;
+pub use sub_protocol::*;
+mod super_protocol;
+pub use super_protocol::*;
 
 pub trait ChunkGenerator {
 	/// Generate a populated chunk **FOR** the world. **DONT** write the chunk!

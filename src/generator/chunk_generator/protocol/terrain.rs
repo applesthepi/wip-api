@@ -2,17 +2,7 @@ use std::str::FromStr;
 
 use nalgebra::Vector3;
 
-use crate::{ClimateSunlight, RTTerrain, TileTerrain, TCHardness, noise::ProtocolNoise};
-
-#[derive(Clone)]
-pub struct PTFSurface {
-	pub sunlight: Option<ClimateSunlight>,
-}
-
-#[derive(Clone)]
-pub enum ProtocolTerrainForm {
-	Surface(PTFSurface)
-}
+use crate::{RTTerrain, TileTerrain, TCHardness, generator::chunk_generator::sub_protocol::noise::ProtocolNoise, ProtocolTerrainForm};
 
 #[derive(Clone)]
 pub struct ProtocolTerrain {
@@ -44,6 +34,7 @@ impl ProtocolTerrain {
 			noise,
 		}
 	}
+
 	pub fn instantiate(
 		&self,
 	) -> Option<RTTerrain> {

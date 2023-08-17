@@ -31,6 +31,12 @@ impl RegistryBlock {
 
 			protocol: Some(Protocol {
 				terrain: Vec::with_capacity(128),
+				items: Vec::with_capacity(1024 * 10),
+				buildings: Vec::with_capacity(1024 * 10),
+				structure: Vec::with_capacity(1024),
+				roofs: Vec::with_capacity(32),
+				entities: Vec::with_capacity(128),
+				covor: Vec::with_capacity(128),
 			}),
 		}
 	}
