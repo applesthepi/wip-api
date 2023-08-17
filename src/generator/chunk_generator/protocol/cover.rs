@@ -1,22 +1,22 @@
 use std::str::FromStr;
 
-use crate::{noise::ProtocolNoise, TileCovor, RTCovor};
+use crate::{noise::ProtocolNoise, TileCover, RTCover};
 
 #[derive(Clone)]
-pub struct ProtocolCovor {
+pub struct ProtocolCover {
 	pub name: Option<String>,
-	pub tile: TileCovor,
+	pub tile: TileCover,
 	pub noise: ProtocolNoise,
 }
 
-impl ProtocolCovor {
+impl ProtocolCover {
 	pub fn new(
 		name: &str,
 		noise: ProtocolNoise,
 	) -> Self {
 		Self {
 			name: Some(String::from_str(name).unwrap()),
-			tile: TileCovor {
+			tile: TileCover {
 			},
 			noise,
 		}
@@ -24,7 +24,7 @@ impl ProtocolCovor {
 
 	pub fn instantiate(
 		&self,
-	) -> Option<RTCovor> {
-		Some(RTCovor::new(self.tile.clone()))
+	) -> Option<RTCover> {
+		Some(RTCover::new(self.tile.clone()))
 	}
 }

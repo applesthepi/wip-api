@@ -14,7 +14,7 @@ pub use item::*;
 mod covor;
 pub use covor::*;
 
-use crate::{PT_MOD_WCOUNT, RTTerrain, RTFloor, RTRoof, RTStructure, RTItem, RTCovor, RTBuilding};
+use crate::{PT_MOD_WCOUNT, RTTerrain, RTFloor, RTRoof, RTStructure, RTItem, RTCover, RTBuilding};
 
 // TODO: covor (like filth/rubble etc.)
 pub struct WorldTile {
@@ -23,7 +23,7 @@ pub struct WorldTile {
 	pub roof: Option<RTRoof>,
 	pub building: [Option<RTBuilding>; 16],
 	pub structure: Option<RTStructure>,
-	pub covor: [Option<RTCovor>; 16],
+	pub covor: [Option<RTCover>; 16],
 	pub item: Option<RTItem>,
 }
 

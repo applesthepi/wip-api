@@ -12,8 +12,8 @@ mod roof;
 pub use roof::*;
 mod entity;
 pub use entity::*;
-mod covor;
-pub use covor::*;
+mod cover;
+pub use cover::*;
 
 pub struct Protocol {
 	pub terrain: Vec<ProtocolTerrain>,
@@ -22,7 +22,7 @@ pub struct Protocol {
 	pub structure: Vec<ProtocolStructure>,
 	pub roofs: Vec<ProtocolRoof>,
 	pub entities: Vec<ProtocolEntity>,
-	pub covor: Vec<ProtocolCovor>,
+	pub cover: Vec<ProtocolCover>,
 }
 
 impl Protocol {
@@ -35,7 +35,7 @@ impl Protocol {
 			structure: Vec::with_capacity(1024),
 			roofs: Vec::with_capacity(32),
 			entities: Vec::with_capacity(128),
-			covor: Vec::with_capacity(128),
+			cover: Vec::with_capacity(128),
 		}
 	}
 }

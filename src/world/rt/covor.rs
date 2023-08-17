@@ -1,14 +1,14 @@
-use crate::TileCovor;
+use crate::TileCover;
 
 #[derive(Clone, Copy)]
-pub struct RTCovor {
-	pub tile: TileCovor,
+pub struct RTCover {
+	pub tile: TileCover,
 	pub selected: bool,
 }
 
-impl RTCovor {
+impl RTCover {
 	pub fn new(
-		tile: TileCovor,
+		tile: TileCover,
 	) -> Self {
 		Self {
 			tile,

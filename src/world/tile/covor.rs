@@ -1,3 +1,3 @@
 #[derive(Clone, Copy)]
-pub struct TileCovor {
+pub struct TileCover {
 }
