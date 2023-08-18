@@ -1,6 +1,6 @@
 use crate::TileFloor;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RTFloor {
 	pub tile: TileFloor,
 	pub selected: bool,

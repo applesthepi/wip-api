@@ -1,6 +1,6 @@
 use crate::TileCover;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RTCover {
 	pub tile: TileCover,
 	pub selected: bool,

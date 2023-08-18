@@ -1,6 +1,6 @@
 use crate::TileItem;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RTItem {
 	pub tile: TileItem,
 	pub selected: bool,

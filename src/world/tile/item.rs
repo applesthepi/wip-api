@@ -1,6 +1,4 @@
-use nalgebra::{vector, Vector3};
-
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum ICState {
 	Singular,
 	Bolder,
@@ -9,16 +7,16 @@ pub enum ICState {
 }
 
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct TileItem {
-	pub color: Vector3<f32>,
+	pub texture_idx: u32,
 	pub ic_state: ICState,
 }
 
 impl Default for TileItem {
 	fn default() -> Self {
 		Self {
-			color: vector![1.0, 1.0, 1.0],
+			texture_idx: 0,
 			ic_state: ICState::Singular,
 		}
 	}

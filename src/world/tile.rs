@@ -33,9 +33,9 @@ impl Default for WorldTile {
 			terrain: [(); 4].map(|_| None),
 			floor: None,
 			roof: None,
-			building: [None; 16],
+			building: [(); 16].map(|_| None),
 			structure: None,
-			covor: [None; 16],
+			covor: [(); 16].map(|_| None),
 			item: None,
 		}
 	}

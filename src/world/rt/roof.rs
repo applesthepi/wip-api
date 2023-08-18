@@ -1,6 +1,6 @@
 use crate::TileRoof;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RTRoof {
 	pub tile: TileRoof,
 	pub selected: bool,

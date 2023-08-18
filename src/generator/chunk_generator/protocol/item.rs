@@ -1,7 +1,5 @@
 use std::str::FromStr;
 
-use nalgebra::Vector3;
-
 use crate::{TileItem, noise::ProtocolNoise, ICState, RTItem};
 
 #[derive(Clone)]
@@ -20,7 +18,7 @@ impl ProtocolItem {
 		Self {
 			name: Some(String::from_str(name).unwrap()),
 			tile: TileItem {
-				color: Vector3::from_column_slice(&[1.0, 1.0, 1.0]),
+				texture_idx: 0,
 				ic_state,
 			},
 			noise,

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{noise::ProtocolNoise, TileStructure, RTStructure};
+use crate::{noise::ProtocolNoise, TileStructure, RTStructure, TCHardness};
 
 #[derive(Clone)]
 pub struct ProtocolStructure {
@@ -12,11 +12,16 @@ pub struct ProtocolStructure {
 impl ProtocolStructure {
 	pub fn new(
 		name: &str,
+		tile_tc_hardness: TCHardness,
+		tile_work: u32,
 		noise: ProtocolNoise,
 	) -> Self {
 		Self {
 			name: Some(String::from_str(name).unwrap()),
 			tile: TileStructure {
+				texture_idx: 0,
+				tc_hardness: tile_tc_hardness,
+				work: tile_work,
 			},
 			noise,
 		}

@@ -5,7 +5,7 @@ use crate::noise::ProtocolNoise;
 #[derive(Clone)]
 pub struct ProtocolEntity {
 	pub name: Option<String>,
-	// pub tile: TileRoof,
+	// pub tile: TileE,
 	pub noise: ProtocolNoise,
 }
 

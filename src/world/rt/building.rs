@@ -1,6 +1,6 @@
 use crate::TileBuilding;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RTBuilding {
 	pub tile: TileBuilding,
 	pub selected: bool,

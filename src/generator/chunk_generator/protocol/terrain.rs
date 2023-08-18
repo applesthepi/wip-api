@@ -1,7 +1,5 @@
 use std::str::FromStr;
 
-use nalgebra::Vector3;
-
 use crate::{RTTerrain, TileTerrain, TCHardness, generator::chunk_generator::sub_protocol::noise::ProtocolNoise, ProtocolTerrainForm};
 
 #[derive(Clone)]
@@ -16,7 +14,6 @@ pub struct ProtocolTerrain {
 impl ProtocolTerrain {
 	pub fn new(
 		name: &str,
-		tile_color: [f32; 3],
 		tile_tc_hardness: TCHardness,
 		tile_work: u32,
 		noise: ProtocolNoise,
@@ -26,7 +23,6 @@ impl ProtocolTerrain {
 			name: Some(String::from_str(name).unwrap()),
 			tile: TileTerrain {
 				texture_idx: 0,
-				color: Vector3::from_column_slice(&tile_color),
 				tc_hardness: tile_tc_hardness,
 				work: tile_work,
 			},
