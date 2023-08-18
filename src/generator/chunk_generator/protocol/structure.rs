@@ -1,12 +1,12 @@
 use std::str::FromStr;
 
-use crate::{noise::ProtocolNoise, TileStructure, RTStructure, TCHardness};
+use crate::{noise::ProtocolNoise2d, TileStructure, RTStructure, TCHardness};
 
 #[derive(Clone)]
 pub struct ProtocolStructure {
 	pub name: Option<String>,
 	pub tile: TileStructure,
-	pub noise: ProtocolNoise,
+	pub noise: ProtocolNoise2d,
 }
 
 impl ProtocolStructure {
@@ -14,7 +14,7 @@ impl ProtocolStructure {
 		name: &str,
 		tile_tc_hardness: TCHardness,
 		tile_work: u32,
-		noise: ProtocolNoise,
+		noise: ProtocolNoise2d,
 	) -> Self {
 		Self {
 			name: Some(String::from_str(name).unwrap()),

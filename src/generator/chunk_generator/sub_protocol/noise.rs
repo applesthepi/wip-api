@@ -42,7 +42,7 @@ impl<N: NoiseFn<f64, 2>> NoiseProxy for NoiseContainer<N> {
 }
 
 #[derive(Clone)]
-pub struct ProtocolNoise {
+pub struct ProtocolNoise3d {
 	/// (
 	/// 	HEIGHT: 0.0 is level zero, 1.0 is level five.
 	/// 	VALID:  <0.5 is none, >0.5 is some.
@@ -53,7 +53,19 @@ pub struct ProtocolNoise {
 	)>,
 }
 
-impl Debug for ProtocolNoise {
+impl Debug for ProtocolNoise3d {
+	fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		Ok(())
+	}
+}
+
+#[derive(Clone)]
+pub struct ProtocolNoise2d {
+	/// VALID: <0.5 is none, >0.5 is some.
+	pub maps: Vec<Arc<dyn NoiseProxy + Send + Sync>>,
+}
+
+impl Debug for ProtocolNoise2d {
 	fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		Ok(())
 	}

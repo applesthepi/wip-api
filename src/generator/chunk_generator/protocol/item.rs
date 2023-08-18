@@ -1,19 +1,19 @@
 use std::str::FromStr;
 
-use crate::{TileItem, noise::ProtocolNoise, ICState, RTItem};
+use crate::{TileItem, noise::ProtocolNoise2d, ICState, RTItem};
 
 #[derive(Clone)]
 pub struct ProtocolItem {
 	pub name: Option<String>,
 	pub tile: TileItem,
-	pub noise: ProtocolNoise,
+	pub noise: ProtocolNoise2d,
 }
 
 impl ProtocolItem {
 	pub fn new(
 		name: &str,
 		ic_state: ICState,
-		noise: ProtocolNoise,
+		noise: ProtocolNoise2d,
 	) -> Self {
 		Self {
 			name: Some(String::from_str(name).unwrap()),

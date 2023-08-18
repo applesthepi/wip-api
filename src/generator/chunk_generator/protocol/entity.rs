@@ -1,18 +1,18 @@
 use std::str::FromStr;
 
-use crate::noise::ProtocolNoise;
+use crate::noise::ProtocolNoise2d;
 
 #[derive(Clone)]
 pub struct ProtocolEntity {
 	pub name: Option<String>,
 	// pub tile: TileE,
-	pub noise: ProtocolNoise,
+	pub noise: ProtocolNoise2d,
 }
 
 impl ProtocolEntity {
 	pub fn new(
 		name: &str,
-		noise: ProtocolNoise,
+		noise: ProtocolNoise2d,
 	) -> Self {
 		Self {
 			name: Some(String::from_str(name).unwrap()),

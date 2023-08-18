@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{RTTerrain, TileTerrain, TCHardness, generator::chunk_generator::sub_protocol::noise::ProtocolNoise, ProtocolTerrainForm};
+use crate::{RTTerrain, TileTerrain, TCHardness, ProtocolTerrainForm, noise::ProtocolNoise3d};
 
 #[derive(Clone)]
 pub struct ProtocolTerrain {
@@ -8,7 +8,7 @@ pub struct ProtocolTerrain {
 	pub tile: TileTerrain,
 	/// Form of terrain has additional configuration.
 	pub form: ProtocolTerrainForm,
-	pub noise: ProtocolNoise,
+	pub noise: ProtocolNoise3d,
 }
 
 impl ProtocolTerrain {
@@ -16,7 +16,7 @@ impl ProtocolTerrain {
 		name: &str,
 		tile_tc_hardness: TCHardness,
 		tile_work: u32,
-		noise: ProtocolNoise,
+		noise: ProtocolNoise3d,
 		form: ProtocolTerrainForm,
 	) -> Self {
 		Self {

@@ -1,19 +1,19 @@
 use std::str::FromStr;
 
-use crate::{noise::ProtocolNoise, TileRoof, RTRoof};
+use crate::{noise::ProtocolNoise2d, TileRoof, RTRoof};
 
 #[derive(Clone)]
 pub struct ProtocolRoof {
 	pub name: Option<String>,
 	pub tile: TileRoof,
-	pub noise: ProtocolNoise,
+	pub noise: ProtocolNoise2d,
 }
 
 impl ProtocolRoof {
 	pub fn new(
 		name: &str,
 		tile_work: u32,
-		noise: ProtocolNoise,
+		noise: ProtocolNoise2d,
 	) -> Self {
 		Self {
 			name: Some(String::from_str(name).unwrap()),
