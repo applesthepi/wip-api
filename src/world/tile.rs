@@ -23,7 +23,7 @@ pub struct WorldTile {
 	pub roof: Option<RTRoof>,
 	pub building: [Option<RTBuilding>; 16],
 	pub structure: Option<RTStructure>,
-	pub covor: [Option<RTCover>; 16],
+	pub cover: [Option<RTCover>; 16],
 	pub item: Option<RTItem>,
 }
 
@@ -35,7 +35,7 @@ impl Default for WorldTile {
 			roof: None,
 			building: [(); 16].map(|_| None),
 			structure: None,
-			covor: [(); 16].map(|_| None),
+			cover: [(); 16].map(|_| None),
 			item: None,
 		}
 	}
@@ -54,5 +54,18 @@ impl WorldTile {
 			}
 		}
 		Some(self.terrain.len() - 1)
+	}
+
+	pub fn set_high_cover(
+		&mut self,
+		rt: Option<RTCover>,
+	) -> bool {
+		for x in self.cover.iter_mut() {
+			if let None = x {
+				*x = rt;
+				return true;
+			}
+		}
+		false
 	}
 }
