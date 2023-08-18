@@ -68,4 +68,17 @@ impl WorldTile {
 		}
 		false
 	}
+
+	pub fn set_high_building(
+		&mut self,
+		rt: Option<RTBuilding>,
+	) -> bool {
+		for x in self.building.iter_mut() {
+			if let None = x {
+				*x = rt;
+				return true;
+			}
+		}
+		false
+	}
 }
