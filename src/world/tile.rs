@@ -48,16 +48,16 @@ impl Default for WorldTile {
 impl WorldTile {
 	pub fn get_high_terrain(
 		&self,
-	) -> Option<usize> {
+	) -> Option<RTTerrain> {
 		for (i, x) in self.terrain.iter().enumerate() {
 			if x.is_none() {
 				if i == 0 {
 					return None;
 				}
-				return Some(i - 1);
+				return self.terrain[i - 1].clone();
 			}
 		}
-		Some(self.terrain.len() - 1)
+		self.terrain.last().unwrap().clone()
 	}
 
 	pub fn get_item(
