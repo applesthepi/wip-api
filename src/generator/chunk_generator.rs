@@ -17,6 +17,6 @@ pub trait ChunkGenerator {
 		&mut self,
 		physical_world: &PhysicalWorld,
 		protocol: Arc<Protocol>,
-		chunk_coordinates: Vector2<i32>,
+		chunk_coordinates: [i32; 2],
 	) -> PhysicalChunk;
 }

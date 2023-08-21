@@ -37,7 +37,8 @@ impl PhysicalWorld {
 	) -> Result<Arc<PhysicalChunk>, GenerationRequest> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
-			*in_chunk_position == chunk_position.0
+			in_chunk_position.x == chunk_position.0[0] &&
+			in_chunk_position.y == chunk_position.0[1]
 		) {
 			Some((_, chunk)) => {
 				Ok(chunk.clone())
@@ -54,7 +55,8 @@ impl PhysicalWorld {
 	) -> Result<Arc<PhysicalChunk>, GenerationRequest> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
-			*in_chunk_position == chunk_position.0
+			in_chunk_position.x == chunk_position.0[0] &&
+			in_chunk_position.y == chunk_position.0[1]
 		) {
 			Some((_, chunk)) => {
 				Ok(chunk.clone())
@@ -72,7 +74,7 @@ impl PhysicalWorld {
 		match world_operation {
 			WorldOperation::SpawnedChunk(chunk_position, chunk, _) => {
 				self.cached_chunks.cached_chunks.push((
-					chunk_position.0,
+					chunk_position.0.into(),
 					chunk,
 				));
 			},
