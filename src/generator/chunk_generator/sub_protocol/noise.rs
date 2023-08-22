@@ -35,8 +35,8 @@ impl<N: NoiseFn<f64, 2>> NoiseProxy for NoiseContainer<N> {
 		rel_position: [usize; 2],
 	) -> f64 {
 		let translation = TranslatePoint::new(&self.noise)
-			.set_x_translation((abs_chunk_position[0] as f64 / (PT_MOD_WCOUNT as f64 / 2.0)) as f64)
-			.set_y_translation((abs_chunk_position[1] as f64 / (PT_MOD_WCOUNT as f64 / 2.0)) as f64);
+			.set_x_translation(abs_chunk_position[0] as f64)
+			.set_y_translation(abs_chunk_position[1] as f64);
 		translation.get([rel_position[0] as f64, rel_position[1] as f64])
 	}
 }
