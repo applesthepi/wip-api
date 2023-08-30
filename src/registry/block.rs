@@ -11,7 +11,7 @@ pub struct RegistryBlock {
 
 	// GENERATORS
 
-	pub world_generators: Vec<Arc<dyn WorldGenerator>>,
+	pub world_generators: Vec<Arc<dyn WorldGenerator + Send + Sync>>,
 	pub chunk_generators: Vec<Arc<dyn ChunkGenerator + Send + Sync>>,
 
 	// REGISTRY
