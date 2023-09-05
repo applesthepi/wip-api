@@ -1,6 +1,8 @@
 #![feature(get_mut_unchecked)]
 #![feature(slice_from_ptr_range)]
 
+pub mod prelude;
+
 mod generator;
 pub use generator::*;
 mod world;

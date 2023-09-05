@@ -1,6 +1,6 @@
 use std::sync::{Arc, atomic::AtomicBool};
 
-use crate::{PhysicalChunk, RTItemState, PawnId, TilePosition, ConstructionProgress, ChunkPosition, PathingResult};
+use crate::{PhysicalChunk, RTItemState, PathingResult, prelude::{TilePositionAbs, ChunkPositionAbs, PawnId, ConstructionProgress}};
 
 //
 // REQUESTS
@@ -14,7 +14,7 @@ pub enum GenericRequest {
 
 #[derive(Clone)]
 pub enum PathingRequest {
-	Path(TilePosition, TilePosition, Arc<PathingResult>),
+	Path(TilePositionAbs, TilePositionAbs, Arc<PathingResult>),
 }
 
 impl PartialEq for PathingRequest {
@@ -38,7 +38,35 @@ impl PartialEq for PathingRequest {
 
 #[derive(Clone)]
 pub enum GenerationRequest {
-	Chunk(ChunkPosition, Option<Arc<AtomicBool>>),
+	Chunk(ChunkPositionAbs, Option<Arc<AtomicBool>>),
+}
+
+impl GenerationRequest {
+	pub fn take_flagback(
+		&mut self,
+	) -> Arc<AtomicBool> {
+		let flagback_operation = |
+			flagback: &mut Option<Arc<AtomicBool>>
+		| {
+			flagback.take().unwrap()
+		};
+		match self {
+			Self::Chunk(_, flagback) => flagback_operation(flagback),
+		}
+	}
+
+	pub fn clone_flagback(
+		&self,
+	) -> Arc<AtomicBool> {
+		let flagback_operation = |
+			flagback: &Option<Arc<AtomicBool>>
+		| {
+			flagback.as_ref().unwrap().clone()
+		};
+		match self {
+			Self::Chunk(_, flagback) => flagback_operation(flagback),
+		}
+	}
 }
 
 impl PartialEq for GenerationRequest {
@@ -64,6 +92,7 @@ impl PartialEq for GenerationRequest {
 // OPERATIONS
 //
 
+// TODO: Organize all operations and requests by WR executor.
 #[derive(Clone)]
 pub enum GenericOperation {
 	WorldOp(WorldOperation),
@@ -73,12 +102,12 @@ pub enum GenericOperation {
 
 #[derive(Clone)]
 pub enum WorldOperation {
-	SpawnedChunk(ChunkPosition, Arc<PhysicalChunk>, Option<Arc<AtomicBool>>),
+	SpawnedChunk(ChunkPositionAbs, Arc<PhysicalChunk>, Option<Arc<AtomicBool>>),
 }
 
 #[derive(Clone)]
 pub enum SavedOperation {
-	ConstructingBuilding(TilePosition, ConstructionProgress),
+	ConstructingBuilding(TilePositionAbs, ConstructionProgress),
 }
 
 #[derive(Clone)]

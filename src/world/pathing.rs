@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32};
 
-use crate::{TilePosition, GridDirection};
+use crate::prelude::{TilePositionAbs, GridDirection};
 
 pub struct PathingResult {
 	///  0 - Wait
@@ -14,7 +14,7 @@ pub struct PathingResult {
 }
 
 pub struct Pathing {
-	pub start: TilePosition,
-	pub end: TilePosition,
+	pub start: TilePositionAbs,
+	pub end: TilePositionAbs,
 	pub path: Vec<GridDirection>,
 }

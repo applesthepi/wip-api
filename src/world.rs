@@ -23,6 +23,8 @@ pub use operations::*;
 mod pathing;
 pub use pathing::*;
 
+use crate::prelude::ChunkPositionAbs;
+
 #[derive(Default)]
 pub struct PhysicalWorld {
 	pub cached_chunks: CachedChunks,
@@ -31,50 +33,51 @@ pub struct PhysicalWorld {
 }
 
 impl PhysicalWorld {
+	// TODO: DOC IMPORTANT
 	pub fn get_chunk(
 		&mut self,
-		chunk_position: ChunkPosition,
-	) -> Result<Arc<PhysicalChunk>, GenerationRequest> {
+		chunk_position_abs: &ChunkPositionAbs,
+	) -> Option<Arc<PhysicalChunk>> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
-			in_chunk_position.x == chunk_position.0[0] &&
-			in_chunk_position.y == chunk_position.0[1]
+			in_chunk_position.x == chunk_position_abs.x as i32 && // TODO: FIX
+			in_chunk_position.y == chunk_position_abs.y as i32
 		) {
 			Some((_, chunk)) => {
-				Ok(chunk.clone())
+				Some(chunk.clone())
 			},
-			None => {
-				Err(GenerationRequest::Chunk(chunk_position, None))
-			}
+			None => None
 		}
 	}
 
+	// TODO: DOC IMPORTANT
 	pub fn get_chunk_flagback(
 		&mut self,
-		chunk_position: ChunkPosition,
+		chunk_position_abs: &ChunkPositionAbs,
 	) -> Result<Arc<PhysicalChunk>, GenerationRequest> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
-			in_chunk_position.x == chunk_position.0[0] &&
-			in_chunk_position.y == chunk_position.0[1]
+			in_chunk_position.x == chunk_position_abs.x as i32 && // TODO: FIX
+			in_chunk_position.y == chunk_position_abs.y as i32
 		) {
 			Some((_, chunk)) => {
 				Ok(chunk.clone())
 			},
 			None => {
-				Err(GenerationRequest::Chunk(chunk_position, Some(Arc::new(AtomicBool::new(false)))))
+				Err(GenerationRequest::Chunk(*chunk_position_abs, Some(Arc::new(AtomicBool::new(false)))))
 			}
 		}
 	}
 
+	// TODO: DOC IMPORTANT
 	pub fn operation(
 		&mut self,
 		world_operation: WorldOperation,
 	) {
 		match world_operation {
-			WorldOperation::SpawnedChunk(chunk_position, chunk, _) => {
-				self.cached_chunks.cached_chunks.push((
-					chunk_position.0.into(),
+			WorldOperation::SpawnedChunk(chunk_position_abs, chunk, _) => {
+				self.cached_chunks.cached_chunks.push(( // TODO: FIX
+					Vector2::new(chunk_position_abs.x as i32, chunk_position_abs.y as i32),
 					chunk,
 				));
 			},
