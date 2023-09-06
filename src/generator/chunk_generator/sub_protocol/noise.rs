@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use noise::{utils::NoiseMap, TranslatePoint, NoiseFn};
+use noise::{utils::{NoiseMap, PlaneMapBuilder, NoiseMapBuilder}, TranslatePoint, NoiseFn};
 
 use core::fmt::Debug;
 
@@ -35,9 +35,12 @@ impl<N: NoiseFn<f64, 2>> NoiseProxy for NoiseContainer<N> {
 		rel_position: [usize; 2],
 	) -> f64 {
 		let translation = TranslatePoint::new(&self.noise)
-			.set_x_translation((abs_chunk_position[0] as f64 / (PT_MOD_WCOUNT as f64 / 2.0)) as f64)
-			.set_y_translation((abs_chunk_position[1] as f64 / (PT_MOD_WCOUNT as f64 / 2.0)) as f64);
-		translation.get([rel_position[0] as f64, rel_position[1] as f64])
+			.set_x_translation(abs_chunk_position[0] as f64)
+			.set_y_translation(abs_chunk_position[1] as f64);
+		let noise_map = PlaneMapBuilder::new(translation)
+			.set_size(PT_MOD_WCOUNT, PT_MOD_WCOUNT)
+			.build();
+		noise_map.get_value(rel_position[0] as usize, rel_position[1] as usize)
 	}
 }
 
