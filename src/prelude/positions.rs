@@ -22,8 +22,8 @@ impl TilePositionAbs {
 		self,
 	) -> ChunkPositionAbs {
 		ChunkPositionAbs::new(
-			self.x as i64 / PT_MOD_WCOUNT as i64,
-			self.y as i64 / PT_MOD_WCOUNT as i64,
+			(self.x as f64 / PT_MOD_WCOUNT as f64).floor() as i64,
+			(self.y as f64 / PT_MOD_WCOUNT as f64).floor() as i64,
 		)
 	}
 }
