@@ -1,6 +1,9 @@
 #![feature(get_mut_unchecked)]
 #![feature(slice_from_ptr_range)]
 
+extern crate bevy;
+extern crate noise;
+
 pub mod prelude;
 
 mod generator;

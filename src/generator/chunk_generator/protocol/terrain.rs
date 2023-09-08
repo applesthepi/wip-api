@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{RTTerrain, TileTerrain, TCHardness, ProtocolTerrainForm, noise::ProtocolNoise3d};
+use crate::{RTTerrain, TileTerrain, TCHardness, ProtocolTerrainForm, ProtocolNoise3d};
 
 #[derive(Clone)]
 pub struct ProtocolTerrain {

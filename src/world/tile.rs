@@ -1,18 +1,17 @@
 mod terrain;
-use nalgebra::{Vector2, vector};
-pub use terrain::*;
+pub use self::terrain::*;
 mod floor;
-pub use floor::*;
+pub use self::floor::*;
 mod building;
-pub use building::*;
+pub use self::building::*;
 mod roof;
-pub use roof::*;
+pub use self::roof::*;
 mod structure;
-pub use structure::*;
+pub use self::structure::*;
 mod item;
-pub use item::*;
-mod covor;
-pub use covor::*;
+pub use self::item::*;
+mod cover;
+pub use self::cover::*;
 
 use crate::{PT_MOD_WCOUNT, RTTerrain, RTFloor, RTRoof, RTStructure, RTItem, RTCover, RTBuilding};
 

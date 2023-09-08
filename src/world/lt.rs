@@ -5,8 +5,7 @@ use crate::{PT_LOD_DEPTH, PT_MOD_WCOUNT};
 use super::lt_mod::LodTreeMod;
 
 mod render_lod;
-use nalgebra::{Vector2, vector};
-pub use render_lod::*;
+pub use self::render_lod::*;
 
 pub struct LodTree {
 	pub cached_trees: Vec<(Vector2<i32>, LodTreeMod)>,

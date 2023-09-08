@@ -1,15 +1,14 @@
 use std::sync::Arc;
 
-use nalgebra::Vector2;
-
-use crate::{PhysicalWorld, PhysicalChunk};
+use crate::PhysicalChunk;
+use crate::PhysicalWorld;
 
 mod protocol;
-pub use protocol::*;
+pub use self::protocol::*;
 mod sub_protocol;
-pub use sub_protocol::*;
+pub use self::sub_protocol::*;
 mod super_protocol;
-pub use super_protocol::*;
+pub use self::super_protocol::*;
 
 pub trait ChunkGenerator {
 	/// Generate a populated chunk **FOR** the world. **DONT** write the chunk!

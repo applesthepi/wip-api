@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
 use noise::{utils::{NoiseMap, PlaneMapBuilder, NoiseMapBuilder}, TranslatePoint, NoiseFn};
-
-use core::fmt::Debug;
+use std::fmt::Debug;
 
 use crate::PT_MOD_WCOUNT;
 

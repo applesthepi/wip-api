@@ -1,16 +1,16 @@
 [package]
-name = "wg"
+name = "wip_api"
 version = "0.1.0"
-edition = "2021"
 
 [lib]
-path = "src/wg.rs"
+path = "src/lib.rs"
 
-[toolchain]
-channel = "nightly"
+###
+### DEPENDENCIES
+###
 
 [dependencies]
-nalgebra = "0.31.4"
-tokio = { version = "1.29.1", features = ["full"] }
-noise = { version = "0.8.2", features = ["images"] }
-bevy = { version = "0.11.2", default-features = false, features = [] }
+
+tokio.workspace = true
+noise.workspace = true
+bevy.workspace = true

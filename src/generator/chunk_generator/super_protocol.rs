@@ -1,2 +1,2 @@
 mod terrain;
-pub use terrain::*;
+pub use self::terrain::*;

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{TileItem, noise::ProtocolNoise2d, ICState, RTItem};
+use crate::{TileItem, ProtocolNoise2d, ICState, RTItem};
 
 #[derive(Clone)]
 pub struct ProtocolItem {

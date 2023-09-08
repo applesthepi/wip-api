@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::{noise::ProtocolNoise2d, TileCover, RTCover};
+use crate::{ProtocolNoise2d, TileCover, RTCover};
 
 #[derive(Clone)]
 pub struct ProtocolCover {

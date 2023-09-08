@@ -1,19 +1,19 @@
 
 
 mod terrain;
-pub use terrain::*;
+pub use self::terrain::*;
 mod item;
-pub use item::*;
+pub use self::item::*;
 mod building;
-pub use building::*;
+pub use self::building::*;
 mod structure;
-pub use structure::*;
+pub use self::structure::*;
 mod roof;
-pub use roof::*;
+pub use self::roof::*;
 mod entity;
-pub use entity::*;
+pub use self::entity::*;
 mod cover;
-pub use cover::*;
+pub use self::cover::*;
 
 pub struct Protocol {
 	pub terrain: Vec<ProtocolTerrain>,

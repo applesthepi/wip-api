@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::noise::ProtocolNoise2d;
+use crate::ProtocolNoise2d;
 
 #[derive(Clone)]
 pub struct ProtocolEntity {

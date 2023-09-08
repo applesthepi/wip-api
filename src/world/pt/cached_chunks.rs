@@ -1,11 +1,9 @@
 use std::sync::{Arc, RwLock};
 
-use nalgebra::Vector2;
-
-use crate::{PhysicalChunk, PT_CACHE_COUNT};
+use crate::{PhysicalChunk, PT_CACHE_COUNT, prelude::ChunkPositionAbs};
 
 pub struct CachedChunks {
-	pub cached_chunks: Vec<(Vector2<i32>, Arc<PhysicalChunk>)>,
+	pub cached_chunks: Vec<(ChunkPositionAbs, Arc<PhysicalChunk>)>,
 }
 
 impl Default for CachedChunks {

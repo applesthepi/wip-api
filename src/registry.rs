@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 mod block;
-pub use block::*;
+pub use self::block::*;
 
 pub struct Registry {
 	pub blocks: HashMap<String, Arc<RegistryBlock>>,

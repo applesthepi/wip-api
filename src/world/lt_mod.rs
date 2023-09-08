@@ -1,7 +1,5 @@
 use std::{rc::Rc, sync::Arc};
 
-use nalgebra::vector;
-
 use crate::{RenderLod, PT_MOD_SQUARED};
 
 pub struct LTMod {

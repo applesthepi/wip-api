@@ -1,27 +1,25 @@
 use std::sync::{Arc, atomic::AtomicBool};
 
-use nalgebra::Vector2;
-
 mod tile;
-pub use tile::*;
+pub use self::tile::*;
 mod pt;
-pub use pt::*;
-mod lt;
-pub use lt::*;
-mod lt_mod;
-pub use lt_mod::*;
+pub use self::pt::*;
+// mod lt;
+// pub use self::lt::*;
+// mod lt_mod;
+// pub use self::lt_mod::*;
 mod rt;
-pub use rt::*;
+pub use self::rt::*;
 mod infos;
-pub use infos::*;
+pub use self::infos::*;
 mod rt_states;
-pub use rt_states::*;
+pub use self::rt_states::*;
 mod singles;
-pub use singles::*;
+pub use self::singles::*;
 mod operations;
-pub use operations::*;
+pub use self::operations::*;
 mod pathing;
-pub use pathing::*;
+pub use self::pathing::*;
 
 use crate::prelude::ChunkPositionAbs;
 
@@ -40,8 +38,7 @@ impl PhysicalWorld {
 	) -> Option<Arc<PhysicalChunk>> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
-			in_chunk_position.x == chunk_position_abs.x as i32 && // TODO: FIX
-			in_chunk_position.y == chunk_position_abs.y as i32
+			*in_chunk_position == *chunk_position_abs
 		) {
 			Some((_, chunk)) => {
 				Some(chunk.clone())
@@ -57,8 +54,7 @@ impl PhysicalWorld {
 	) -> Result<Arc<PhysicalChunk>, GenerationRequest> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
-			in_chunk_position.x == chunk_position_abs.x as i32 && // TODO: FIX
-			in_chunk_position.y == chunk_position_abs.y as i32
+			*in_chunk_position == *chunk_position_abs
 		) {
 			Some((_, chunk)) => {
 				Ok(chunk.clone())
@@ -77,7 +73,7 @@ impl PhysicalWorld {
 		match world_operation {
 			WorldOperation::SpawnedChunk(chunk_position_abs, chunk, _) => {
 				self.cached_chunks.cached_chunks.push(( // TODO: FIX
-					Vector2::new(chunk_position_abs.x as i32, chunk_position_abs.y as i32),
+					chunk_position_abs,
 					chunk,
 				));
 			},

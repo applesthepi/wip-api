@@ -1,12 +1,9 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
-use nalgebra::Vector2;
-use tokio::sync::RwLock;
-
-use crate::PT_STORAGE_COUNT;
+use crate::{PT_STORAGE_COUNT, prelude::ChunkPositionAbs};
 
 pub struct StoredChunks {
-	stored_chunks: Arc<RwLock<Vec<Vector2<i32>>>>,
+	stored_chunks: Arc<RwLock<Vec<ChunkPositionAbs>>>,
 }
 
 impl Default for StoredChunks {
@@ -20,7 +17,7 @@ impl Default for StoredChunks {
 impl StoredChunks {
 	pub fn chunks(
 		&self,
-	) -> Arc<RwLock<Vec<Vector2<i32>>>> {
+	) -> Arc<RwLock<Vec<ChunkPositionAbs>>> {
 		self.stored_chunks.clone()
 	}
 }
