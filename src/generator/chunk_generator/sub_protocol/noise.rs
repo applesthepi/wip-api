@@ -12,6 +12,12 @@ pub trait NoiseProxy {
 		abs_chunk_position: [i32; 2],
 		rel_position: [usize; 2],
 	) -> f64;
+
+	fn write_to_file(
+		&self,
+		file: &str,
+		abs_chunk_position: [i32; 2],
+	);
 }
 
 pub struct NoiseContainer<N: NoiseFn<f64, 2>> {
@@ -34,13 +40,24 @@ impl<N: NoiseFn<f64, 2>> NoiseProxy for NoiseContainer<N> {
 		abs_chunk_position: [i32; 2],
 		rel_position: [usize; 2],
 	) -> f64 {
+		self.noise.get([
+			rel_position[0] as f64 + (abs_chunk_position[0] as f64 * PT_MOD_WCOUNT as f64),
+			rel_position[1] as f64 + (abs_chunk_position[1] as f64 * PT_MOD_WCOUNT as f64),
+		])
+	}
+
+	fn write_to_file(
+		&self,
+		file: &str,
+		abs_chunk_position: [i32; 2],
+	) {
 		let translation = TranslatePoint::new(&self.noise)
-			.set_x_translation(abs_chunk_position[0] as f64)
-			.set_y_translation(abs_chunk_position[1] as f64);
+			.set_x_translation(abs_chunk_position[0] as f64 * 2.0)
+			.set_y_translation(abs_chunk_position[1] as f64 * 2.0);
 		let noise_map = PlaneMapBuilder::new(translation)
 			.set_size(PT_MOD_WCOUNT, PT_MOD_WCOUNT)
 			.build();
-		noise_map.get_value(rel_position[0] as usize, rel_position[1] as usize)
+		noise_map.write_to_file(file);
 	}
 }
 
