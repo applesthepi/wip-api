@@ -6,11 +6,22 @@ version = "0.1.0"
 path = "src/lib.rs"
 
 ###
+### FEATURES
+###
+
+[features]
+# May improve performance on specific platforms.
+weak-operations = []
+
+###
 ### DEPENDENCIES
 ###
 
 [dependencies]
 
+# INTERNAL
+
+# EXTERNAL
 tokio.workspace = true
 noise.workspace = true
 bevy.workspace = true

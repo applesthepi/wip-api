@@ -14,6 +14,8 @@ mod version;
 pub use version::*;
 mod registry;
 pub use registry::*;
+mod sync;
+pub use sync::*;
 
 pub const PT_LOD_DEPTH: u32 = 3;
 
