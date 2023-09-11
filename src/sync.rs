@@ -1,11 +1,55 @@
-use std::{sync::atomic::{AtomicBool, self}, time::Instant, hint};
+use std::{sync::atomic::{AtomicBool, self}, time::Instant, hint, rc::Rc};
 
 use bevy::prelude::error;
 
 const ATOMIC_LOCK_SPIN_MS: u64 = 1_000;
 
+/// Heaps `T` and allows `self` to be coped and sent
+/// among threads saftly due to `AtomicLock` guarentees.
+/// 
+/// Make sure all referances to `self` will not be used
+/// after `AtomicLockPtr::dealloc` is called.
+pub struct AtomicLockPtr<T>(*mut AtomicLock<T>);
+unsafe impl<T> Send for AtomicLockPtr<T> {}
+unsafe impl<T> Sync for AtomicLockPtr<T> {}
+
+impl<T> AtomicLockPtr<T> {
+	pub fn new(
+		t: T,
+	) -> Self {
+		Self(Box::into_raw(Box::new(
+			AtomicLock::new(t),
+		)))
+	}
+
+	/// Acquires the lock in `AtomicLock`.
+	pub fn acquire(
+		&mut self,
+	) -> AtomicGuard<'_, T> { unsafe {
+		self.0.as_mut().unwrap_unchecked().acquire()
+	}}
+
+	// TODO: ARC? BOXRC? impl drop for this struct should be called on
+	// 		 all copies, which we dont want.
+
+	/// Invalidates this struct as well as all copies.
+	pub fn dealloc(
+		&mut self,
+	) { unsafe {
+		drop(Box::from_raw(self.0));
+	}}
+}
+
+/// 
+impl<T> Copy for AtomicLockPtr<T> {}
+impl<T> Clone for AtomicLockPtr<T> {
+	fn clone(&self) -> Self {
+		*self
+	}
+}
+
 /// Guarantees any thread can read/write from/to `T` without
-/// race conditions.
+/// memory racing or reorder racing.
 /// 
 /// # How Does This Work?
 /// 
@@ -19,7 +63,7 @@ const ATOMIC_LOCK_SPIN_MS: u64 = 1_000;
 /// - cpu can race data (reading and writing at the same time).
 /// 
 /// ### Acquire/Release
-/// - **before acquire:** any instructions can be reordered
+/// - **before acquire:** any instructions can be reordered.
 /// - **between:** all instructions between the last
 ///   `acquire`/`release` will be present once acquired again.
 /// - **after release:** all instructions done before release

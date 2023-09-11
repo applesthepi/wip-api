@@ -1,19 +1,21 @@
+use crate::{PT_MOD_WCOUNT, RTTerrain, RTFloor, RTRoof, RTStructure, RTItem, RTCover, RTBuilding};
+
 mod terrain;
-pub use self::terrain::*;
 mod floor;
-pub use self::floor::*;
 mod building;
-pub use self::building::*;
 mod roof;
-pub use self::roof::*;
 mod structure;
-pub use self::structure::*;
 mod item;
-pub use self::item::*;
 mod cover;
+
+pub use self::terrain::*;
+pub use self::floor::*;
+pub use self::building::*;
+pub use self::roof::*;
+pub use self::structure::*;
+pub use self::item::*;
 pub use self::cover::*;
 
-use crate::{PT_MOD_WCOUNT, RTTerrain, RTFloor, RTRoof, RTStructure, RTItem, RTCover, RTBuilding};
 
 pub enum WTOperation {
 	Success,
