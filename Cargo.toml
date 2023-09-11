@@ -20,8 +20,10 @@ weak-operations = []
 [dependencies]
 
 # INTERNAL
+wip_primal.workspace = true
 
 # EXTERNAL
+num.workspace = true
 tokio.workspace = true
 noise.workspace = true
 bevy.workspace = true

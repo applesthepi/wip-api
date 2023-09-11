@@ -1,6 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{PhysicalChunk, PT_CACHE_COUNT, prelude::ChunkPositionAbs};
+use wip_primal::ChunkPositionAbs;
+
+use crate::{PhysicalChunk, PT_CACHE_COUNT};
 
 pub struct CachedChunks {
 	pub cached_chunks: Vec<(ChunkPositionAbs, Arc<PhysicalChunk>)>,

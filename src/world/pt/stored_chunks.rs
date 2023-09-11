@@ -1,6 +1,8 @@
 use std::sync::{Arc, RwLock};
 
-use crate::{PT_STORAGE_COUNT, prelude::ChunkPositionAbs};
+use wip_primal::ChunkPositionAbs;
+
+use crate::PT_STORAGE_COUNT;
 
 pub struct StoredChunks {
 	stored_chunks: Arc<RwLock<Vec<ChunkPositionAbs>>>,

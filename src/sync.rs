@@ -147,9 +147,10 @@ impl<'guard, T> AtomicGuard<'guard, T> {
 
 	/// Retrives a mutable referance to T that is safe to
 	/// read and write.
-	pub fn get(
-		&'guard mut self,
-	) -> &'guard mut T {
+	/// TODO: 'get + 'guard ???
+	pub fn get<'get>(
+		&'get mut self,
+	) -> &'get mut T {
 		self.t
 	}
 }

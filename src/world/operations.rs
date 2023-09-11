@@ -1,6 +1,8 @@
 use std::sync::{Arc, atomic::AtomicBool};
 
-use crate::{PhysicalChunk, RTItemState, PathingResult, prelude::{TilePositionAbs, ChunkPositionAbs, PawnId, ConstructionProgress}};
+use wip_primal::{TilePositionAbs, ChunkPositionAbs};
+
+use crate::{PhysicalChunk, RTItemState, PathingResult, prelude::{PawnId, ConstructionProgress}};
 
 //
 // REQUESTS

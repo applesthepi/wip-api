@@ -1,6 +1,6 @@
-use std::{sync::Arc, str::FromStr};
+use std::str::FromStr;
 
-use crate::{WorldGenerator, ChunkGenerator, Protocol, ProtocolTerrain, ProtocolItem, ProtocolBuilding, ProtocolStructure, ProtocolRoof, ProtocolEntity, ProtocolCover};
+use crate::{Protocol, ProtocolTerrain, ProtocolItem, ProtocolBuilding, ProtocolStructure, ProtocolRoof, ProtocolEntity, ProtocolCover, prelude::ChunkGeneratorSingle};
 
 pub struct RegistryBlock {
 	
@@ -11,8 +11,8 @@ pub struct RegistryBlock {
 
 	// GENERATORS
 
-	pub world_generators: Vec<Arc<dyn WorldGenerator + Send + Sync>>,
-	pub chunk_generators: Vec<Arc<dyn ChunkGenerator + Send + Sync>>,
+	// pub world_generators: Vec<*mut ChunkGeneratorSingle>,
+	pub chunk_generators: Vec<ChunkGeneratorSingle>,
 
 	// REGISTRY
 
@@ -26,7 +26,7 @@ impl RegistryBlock {
 			display_name: String::from_str("NULL").unwrap(),
 			folder_name: String::from_str("NULL").unwrap(),
 
-			world_generators: Vec::with_capacity(8),
+			// world_generators: Vec::with_capacity(8),
 			chunk_generators: Vec::with_capacity(8),
 
 			protocol: Some(Protocol::new()),

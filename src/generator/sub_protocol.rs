@@ -1,4 +1,5 @@
 mod noise;
-pub use self::noise::*;
 mod climate;
+
+pub use self::noise::*;
 pub use self::climate::*;

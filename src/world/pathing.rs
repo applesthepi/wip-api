@@ -1,6 +1,8 @@
-use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32};
+use std::sync::atomic::AtomicU8;
 
-use crate::prelude::{TilePositionAbs, GridDirection};
+use wip_primal::TilePositionAbs;
+
+use crate::prelude::GridDirection;
 
 pub struct PathingResult {
 	///  0 - Wait

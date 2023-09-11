@@ -1,20 +1,23 @@
 #![feature(get_mut_unchecked)]
 #![feature(slice_from_ptr_range)]
 
+extern crate wip_primal;
 extern crate bevy;
 extern crate noise;
+extern crate num;
 
 pub mod prelude;
 
 mod generator;
-pub use generator::*;
 mod world;
-pub use world::*;
 mod version;
-pub use version::*;
 mod registry;
-pub use registry::*;
 mod sync;
+
+pub use generator::*;
+pub use world::*;
+pub use version::*;
+pub use registry::*;
 pub use sync::*;
 
 pub const PT_LOD_DEPTH: u32 = 3;
