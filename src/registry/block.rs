@@ -1,35 +1,55 @@
 use std::str::FromStr;
 
+use libloading::Library;
+
 use crate::{Protocol, ProtocolTerrain, ProtocolItem, ProtocolBuilding, ProtocolStructure, ProtocolRoof, ProtocolEntity, ProtocolCover, prelude::ChunkGeneratorSingle};
 
-pub struct RegistryBlock {
+pub struct RegistryBlock(pub *mut RegistryBlockRaw);
+unsafe impl Send for RegistryBlock {}
+unsafe impl Sync for RegistryBlock {}
+impl Eq for RegistryBlock {}
+impl PartialEq for RegistryBlock {
+	fn eq(&self, other: &Self) -> bool {
+		self.0 == other.0
+	}
+	fn ne(&self, other: &Self) -> bool {
+		self.0 != other.0
+	}
+}
+
+impl RegistryBlock {
+	pub fn get<'get>(
+		&'get mut self,
+	) -> &'get mut RegistryBlockRaw { unsafe {
+		&mut *self.0
+	}}
+}
+
+pub struct RegistryBlockRaw {
 	
 	// MOD OPTIONS
 
 	pub display_name: String,
 	pub folder_name: String,
 
-	// GENERATORS
-
-	// pub world_generators: Vec<*mut ChunkGeneratorSingle>,
-	pub chunk_generators: Vec<ChunkGeneratorSingle>,
-
 	// REGISTRY
 
+	pub chunk_generators: Vec<ChunkGeneratorSingle>,
 	pub protocol: Option<Protocol>,
+	pub library: Library,
 }
 
-impl RegistryBlock {
+impl RegistryBlockRaw {
 	pub fn new(
+		library: Library,
 	) -> Self {
 		Self {
 			display_name: String::from_str("NULL").unwrap(),
 			folder_name: String::from_str("NULL").unwrap(),
 
-			// world_generators: Vec::with_capacity(8),
 			chunk_generators: Vec::with_capacity(8),
-
 			protocol: Some(Protocol::new()),
+			library,
 		}
 	}
 

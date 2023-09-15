@@ -27,3 +27,4 @@ num.workspace = true
 tokio.workspace = true
 noise.workspace = true
 bevy.workspace = true
+libloading.workspace = true

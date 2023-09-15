@@ -2,7 +2,7 @@ use std::{sync::atomic::{AtomicBool, self}, time::Instant, hint, rc::Rc};
 
 use bevy::prelude::error;
 
-const ATOMIC_LOCK_SPIN_MS: u64 = 1_000;
+const ATOMIC_LOCK_SPIN_MS: u64 = 5_000;
 
 /// Heaps `T` and allows `self` to be coped and sent
 /// among threads saftly due to `AtomicLock` guarentees.
@@ -33,6 +33,7 @@ impl<T> AtomicLockPtr<T> {
 	// 		 all copies, which we dont want.
 
 	/// Invalidates this struct as well as all copies.
+	/// This is NOT "safe" unless you gurantee all copies wont be used.
 	pub fn dealloc(
 		&mut self,
 	) { unsafe {
@@ -155,10 +156,13 @@ impl<T> AtomicLock<T> {
 	) {
 		hint::spin_loop();
 		if instant.elapsed().as_millis() as u64 > ATOMIC_LOCK_SPIN_MS {
+			let message = "DEADLOCK DETECTED - atomic lock spin_loop took over";
 			error!(
-				"DEADLOCK DETECTED - atomic lock spin_loop took over {}ms",
+				"{} {}ms!",
+				message,
 				ATOMIC_LOCK_SPIN_MS,
 			);
+			panic!("DEADLOCK DETECTED - atomic spin_loop took to much time!");
 		}
 	}
 }

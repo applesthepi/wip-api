@@ -1,19 +1,40 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, sync::Arc, hash::Hash};
 
 mod block;
 pub use self::block::*;
 
-pub struct ModIdentitifier(String);
+#[derive(Hash, Debug, Default, Clone, PartialEq, Eq)]
+pub struct ModIdentitifier {
+	unlocalized_name: String,
+	folder_name: String,
+}
+
 impl ModIdentitifier {
 	pub fn from_name(
-		name: &str,
+		unlocalized_name: &str,
+		folder_name: &str,
 	) -> Self {
-		Self(name.to_string())
+		Self {
+			unlocalized_name: unlocalized_name.to_owned(),
+			folder_name: folder_name.to_owned(),
+		}
+	}
+
+	pub fn name_as_str<'str>(
+		&'str self,
+	) -> &'str str {
+		&self.unlocalized_name
+	}
+
+	pub fn folder_as_str<'str>(
+		&'str self,
+	) -> &'str str {
+		&self.folder_name
 	}
 }
 
 pub struct Registry {
-	pub blocks: HashMap<ModIdentitifier, Arc<RegistryBlock>>,
+	pub blocks: HashMap<ModIdentitifier, RegistryBlock>,
 }
 
 impl Registry {
