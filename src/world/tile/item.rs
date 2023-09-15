@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum ICState {
 	Singular,
 	Bolder,
@@ -7,7 +7,7 @@ pub enum ICState {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct TileItem {
 	pub texture_idx: u32,
 	pub ic_state: ICState,

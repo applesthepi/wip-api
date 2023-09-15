@@ -1,22 +1,20 @@
 use std::sync::Arc;
 
-use noise::{utils::{NoiseMap, PlaneMapBuilder, NoiseMapBuilder}, TranslatePoint, NoiseFn};
-use std::fmt::Debug;
-
-use crate::PT_MOD_WCOUNT;
+use noise::NoiseFn;
+use wip_primal::{TilePositionRel, ChunkPositionAbs, CHUNK_WIDTH};
 
 pub trait NoiseProxy {
 	fn get(
 		&self,
-		abs_chunk_position: [i32; 2],
-		rel_position: [usize; 2],
+		chunk_position_abs: &ChunkPositionAbs,
+		tile_position_rel: &TilePositionRel,
 	) -> f64;
 
-	fn write_to_file(
-		&self,
-		file: &str,
-		abs_chunk_position: [i32; 2],
-	);
+	// fn write_to_file(
+	// 	&self,
+	// 	file: &str,
+	// 	abs_chunk_position: [i32; 2],
+	// );
 }
 
 pub struct NoiseContainer<N: NoiseFn<f64, 2>> {
@@ -36,28 +34,28 @@ impl<N: NoiseFn<f64, 2>> NoiseContainer<N> {
 impl<N: NoiseFn<f64, 2>> NoiseProxy for NoiseContainer<N> {
 	fn get(
 		&self,
-		abs_chunk_position: [i32; 2],
-		rel_position: [usize; 2],
+		chunk_position_abs: &ChunkPositionAbs,
+		tile_position_rel: &TilePositionRel,
 	) -> f64 {
 		self.noise.get([
-			rel_position[0] as f64 + (abs_chunk_position[0] as f64 * PT_MOD_WCOUNT as f64),
-			rel_position[1] as f64 + (abs_chunk_position[1] as f64 * PT_MOD_WCOUNT as f64),
+			tile_position_rel.x as f64 + (chunk_position_abs.x as f64 * CHUNK_WIDTH as f64),
+			tile_position_rel.y as f64 + (chunk_position_abs.y as f64 * CHUNK_WIDTH as f64),
 		])
 	}
 
-	fn write_to_file(
-		&self,
-		file: &str,
-		abs_chunk_position: [i32; 2],
-	) {
-		let translation = TranslatePoint::new(&self.noise)
-			.set_x_translation(abs_chunk_position[0] as f64 * 2.0)
-			.set_y_translation(abs_chunk_position[1] as f64 * 2.0);
-		let noise_map = PlaneMapBuilder::new(translation)
-			.set_size(PT_MOD_WCOUNT, PT_MOD_WCOUNT)
-			.build();
-		noise_map.write_to_file(file);
-	}
+	// fn write_to_file(
+	// 	&self,
+	// 	file: &str,
+	// 	abs_chunk_position: [i32; 2],
+	// ) {
+	// 	let translation = TranslatePoint::new(&self.noise)
+	// 		.set_x_translation(abs_chunk_position[0] as f64 * 2.0)
+	// 		.set_y_translation(abs_chunk_position[1] as f64 * 2.0);
+	// 	let noise_map = PlaneMapBuilder::new(translation)
+	// 		.set_size(PT_MOD_WCOUNT, PT_MOD_WCOUNT)
+	// 		.build();
+	// 	noise_map.write_to_file(file);
+	// }
 }
 
 #[derive(Clone)]
@@ -72,11 +70,11 @@ pub struct ProtocolNoise3d {
 	)>,
 }
 
-impl Debug for ProtocolNoise3d {
-	fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		Ok(())
-	}
-}
+// impl Debug for ProtocolNoise3d {
+// 	fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+// 		Ok(())
+// 	}
+// }
 
 #[derive(Clone)]
 pub struct ProtocolNoise2d {
@@ -84,8 +82,8 @@ pub struct ProtocolNoise2d {
 	pub maps: Vec<Arc<dyn NoiseProxy + Send + Sync>>,
 }
 
-impl Debug for ProtocolNoise2d {
-	fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		Ok(())
-	}
-}
+// impl Debug for ProtocolNoise2d {
+// 	fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+// 		Ok(())
+// 	}
+// }

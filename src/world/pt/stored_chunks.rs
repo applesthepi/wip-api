@@ -1,8 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use wip_primal::ChunkPositionAbs;
-
-use crate::PT_STORAGE_COUNT;
+use wip_primal::{ChunkPositionAbs, CHUNK_WIDTH_SQ};
 
 pub struct StoredChunks {
 	stored_chunks: Arc<RwLock<Vec<ChunkPositionAbs>>>,
@@ -11,7 +9,7 @@ pub struct StoredChunks {
 impl Default for StoredChunks {
 	fn default() -> Self {
 		Self {
-			stored_chunks: Arc::new(RwLock::new(Vec::with_capacity(PT_STORAGE_COUNT))),
+			stored_chunks: Arc::new(RwLock::new(Vec::with_capacity(CHUNK_WIDTH_SQ))),
 		}
 	}
 }

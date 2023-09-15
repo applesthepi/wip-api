@@ -1,6 +1,6 @@
 use crate::TCHardness;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum BuildingType {
 	Conduit,
 	Floor,
@@ -10,7 +10,7 @@ pub enum BuildingType {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct TileBuilding {
 	pub texture_idx: u32,
 	pub tc_hardness: TCHardness,

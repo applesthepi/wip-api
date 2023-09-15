@@ -1,18 +1,20 @@
-use crate::TileFloor;
+// TODO: TILE FLOOR
 
-#[derive(Clone)]
-pub struct RTFloor {
-	pub tile: TileFloor,
-	pub selected: bool,
-}
+// use crate::TileFloor;
 
-impl RTFloor {
-	pub fn new(
-		tile: TileFloor,
-	) -> Self {
-		Self {
-			tile,
-			selected: false,
-		}
-	}
-}
+// #[derive(Clone)]
+// pub struct RTFloor {
+// 	pub tile: TileFloor,
+// 	pub selected: bool,
+// }
+
+// impl RTFloor {
+// 	pub fn new(
+// 		tile: TileFloor,
+// 	) -> Self {
+// 		Self {
+// 			tile,
+// 			selected: false,
+// 		}
+// 	}
+// }

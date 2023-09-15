@@ -1,45 +1,45 @@
 use std::{rc::Rc, cell::{RefMut, RefCell, Ref}, borrow::BorrowMut, slice::from_ptr_range, sync::{Arc, RwLock}};
 
-use crate::{PT_MOD_SQUARED, WorldTile, PT_MOD_WCOUNT};
+use wip_primal::CHUNK_WIDTH;
+use crate::WorldTile;
 
 pub struct PhysicalChunk {
-	tiles: Arc<RwLock<Vec<[WorldTile; PT_MOD_WCOUNT]>>>,
-	dirty: bool,
+	pub tiles: Box<[[WorldTile; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize]>,
+	// dirty: bool,
 }
 
 impl PhysicalChunk {
-	pub fn default() -> PhysicalChunk {
-		let mut tiles: Vec<[WorldTile; PT_MOD_WCOUNT]> = Vec::with_capacity(PT_MOD_WCOUNT);
-		tiles.resize_with(PT_MOD_WCOUNT, || { [(); PT_MOD_WCOUNT].map(|_| WorldTile::default()) });
+	pub fn new(
+		tiles: Box<[[WorldTile; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize]>,
+	) -> Self {
 		Self {
-			tiles: Arc::new(RwLock::new(tiles)),
-			dirty: true,
+			tiles,
 		}
 	}
 
-	pub fn pull_contents(
-		&mut self,
-	) -> Arc<RwLock<Vec<[WorldTile; PT_MOD_WCOUNT]>>> {
-		self.dirty = false;
-		self.tiles.clone()
-	}
+	// pub fn pull_contents(
+	// 	&mut self,
+	// ) -> Arc<RwLock<Vec<[WorldTile; PT_MOD_WCOUNT]>>> {
+	// 	self.dirty = false;
+	// 	self.tiles.clone()
+	// }
 
-	pub fn modify(
-		&mut self,
-	) -> Arc<RwLock<Vec<[WorldTile; PT_MOD_WCOUNT]>>> {
-		self.dirty = true;
-		self.tiles.clone()
-	}
+	// pub fn modify(
+	// 	&mut self,
+	// ) -> Arc<RwLock<Vec<[WorldTile; PT_MOD_WCOUNT]>>> {
+	// 	self.dirty = true;
+	// 	self.tiles.clone()
+	// }
 
-	pub fn no_modify(
-		&self,
-	) -> Arc<RwLock<Vec<[WorldTile; PT_MOD_WCOUNT]>>> {
-		self.tiles.clone()
-	}
+	// pub fn no_modify(
+	// 	&self,
+	// ) -> Arc<RwLock<Vec<[WorldTile; PT_MOD_WCOUNT]>>> {
+	// 	self.tiles.clone()
+	// }
 
-	pub fn is_dirty(
-		&self,
-	) -> bool {
-		self.dirty
-	}
+	// pub fn is_dirty(
+	// 	&self,
+	// ) -> bool {
+	// 	self.dirty
+	// }
 }

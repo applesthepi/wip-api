@@ -71,4 +71,25 @@ impl IntermediateWorldRaw {
 			intermediate_sector.get_chunk(&chunk_position_rel),
 		)
 	}
+
+	pub fn insert_chunk(
+		&mut self,
+		chunk_position_abs: &ChunkPositionAbs,
+		intermediate_chunk: IntermediateChunk,
+	) {
+		let sector_position_abs = chunk_position_abs.as_sector();
+		let intermediate_sector = match self.cached_sectors.get_mut(
+			&sector_position_abs,
+		) {
+			Some(x) => x,
+			None => { return; },
+		};
+		let chunk_position_rel = match sector_position_abs.attempt_rel_from_abs(
+			chunk_position_abs,
+		) {
+			Some(x) => x,
+			None => { return; },
+		};
+		intermediate_sector.insert_chunk(&chunk_position_rel, intermediate_chunk);
+	}
 }

@@ -1,3 +1,5 @@
+use crate::RTTile;
+
 #[derive(Clone, Copy)]
 pub enum TCHardness {
 	Solid,
@@ -5,7 +7,7 @@ pub enum TCHardness {
 }
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct TileTerrain {
 	pub texture_idx: u32,
 	pub tc_hardness: TCHardness,

@@ -28,7 +28,7 @@ pub trait ChunkGenerator {
 	fn chunk(
 		&mut self,
 		intermediate_world: *mut IntermediateWorld,
-		intermediate_chunk: &mut IntermediateChunk,
+		intermediate_chunk: IntermediateChunk,
 		// TODO: registry? protocol?
 	);
 }

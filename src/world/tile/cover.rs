@@ -1,5 +1,5 @@
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct TileCover {
 	pub texture_idx: u32,
 	pub work: u32,

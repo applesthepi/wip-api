@@ -10,7 +10,7 @@ pub struct IntermediateSector {
 impl IntermediateSector {
 	pub fn get_chunk<'guard>(
 		&'guard mut self,
-		chunk_position_rel: &ChunkPositionRel
+		chunk_position_rel: &ChunkPositionRel,
 	) -> &'guard mut IntermediateChunk {
 		debug_assert!(
 			chunk_position_rel.x < SECTOR_WIDTH &&
@@ -19,5 +19,19 @@ impl IntermediateSector {
 		&mut self.chunks
 			[chunk_position_rel.x as usize]
 			[chunk_position_rel.y as usize]
+	}
+
+	pub fn insert_chunk(
+		&mut self,
+		chunk_position_rel: &ChunkPositionRel,
+		intermediate_chunk: IntermediateChunk,
+	) {
+		debug_assert!(
+			chunk_position_rel.x < SECTOR_WIDTH &&
+			chunk_position_rel.y < SECTOR_WIDTH
+		);
+		self.chunks
+			[chunk_position_rel.x as usize]
+			[chunk_position_rel.y as usize] = intermediate_chunk;
 	}
 }

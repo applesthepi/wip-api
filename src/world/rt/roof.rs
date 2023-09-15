@@ -1,6 +1,6 @@
-use crate::TileRoof;
+use crate::{TileRoof, RTTile};
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct RTRoof {
 	pub tile: TileRoof,
 	pub selected: bool,
@@ -14,5 +14,15 @@ impl RTRoof {
 			tile,
 			selected: false,
 		}
+	}
+}
+
+impl RTTile for RTRoof {
+	fn texture_idx(&self) -> u32 {
+		self.tile.texture_idx
+	}
+
+	fn set(&mut self, texture_idx: u32) {
+		self.tile.texture_idx = texture_idx;
 	}
 }

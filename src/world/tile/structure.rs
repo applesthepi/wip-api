@@ -1,7 +1,7 @@
 use crate::TCHardness;
 
 #[repr(C)]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct TileStructure {
 	pub texture_idx: u32,
 	pub tc_hardness: TCHardness,

@@ -24,7 +24,7 @@ impl ChunkGeneratorSingle {
 	pub fn chunk(
 		&mut self,
 		intermediate_world: *mut IntermediateWorld,
-		intermediate_chunk: &mut IntermediateChunk,
+		intermediate_chunk: IntermediateChunk,
 	) { unsafe {
 		self.0.as_mut().unwrap_unchecked().chunk(
 			intermediate_world,

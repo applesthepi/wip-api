@@ -1,6 +1,6 @@
-use crate::TileTerrain;
+use crate::{TileTerrain, RTTile};
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct RTTerrain {
 	pub tile: TileTerrain,
 	pub selected: bool,
@@ -14,5 +14,15 @@ impl RTTerrain {
 			tile,
 			selected: false,
 		}
+	}
+}
+
+impl RTTile for RTTerrain {
+	fn texture_idx(&self) -> u32 {
+		self.tile.texture_idx
+	}
+
+	fn set(&mut self, texture_idx: u32) {
+		self.tile.texture_idx = texture_idx;
 	}
 }
