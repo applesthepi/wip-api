@@ -1,4 +1,4 @@
-use std::{sync::atomic::{AtomicBool, self}, time::Instant, hint, rc::Rc};
+use std::{sync::atomic::{AtomicBool, self}, time::{Instant, Duration}, hint, rc::Rc, thread};
 
 use bevy::prelude::error;
 
@@ -41,11 +41,150 @@ impl<T> AtomicLockPtr<T> {
 	}}
 }
 
-/// 
+/// Allows Copy/Clone without dropping T.
 impl<T> Copy for AtomicLockPtr<T> {}
 impl<T> Clone for AtomicLockPtr<T> {
 	fn clone(&self) -> Self {
 		*self
+	}
+}
+
+/// Determines sleep method for `AtomicSignal`.
+pub enum AtomicSignalSleep {
+	/// Spin loop. Use when your sure it will take less then a few microseconds.
+	Spin,
+	/// Sleeps for 1ms. Use when your not sure how long, but you are ok with some
+	/// thread load.
+	Quick,
+	/// Sleeps for 10ms. Barely any thread load, use everywhere else.
+	Rest,
+}
+
+/// Used for duo thread back and forth. Not applicable for several
+/// threads due to dst thread signaling back to src thread structure.
+/// 
+/// Ordering must be Acquire/Release because sending must occur
+/// before querying if the signal when reducted.
+pub struct AtomicSignal {
+	lock: AtomicBool,
+}
+
+impl AtomicSignal {
+	pub fn new(
+	) -> Self {
+		Self {
+			lock: AtomicBool::new(false),
+		}
+	}
+
+	/// Sends a signal.
+	pub fn sender_signal(
+		&mut self,
+	) {
+		self.store(true);
+	}
+
+	/// Queries if the signal was reducted, NOT what the value of the
+	/// atomic is.
+	pub fn sender_query(
+		&mut self,
+	) -> bool {
+		self.query(false)
+	}
+
+	/// Enters a spin loop until a signal is reducted. Does NOT send
+	/// the signal.
+	pub fn sender_wait(
+		&mut self,
+		sleep: AtomicSignalSleep,
+	) {
+		match sleep {
+			AtomicSignalSleep::Spin => {
+				self.spin(false);
+			},
+			AtomicSignalSleep::Quick => {
+				self.sleep(false, Duration::from_millis(1));
+			},
+			AtomicSignalSleep::Rest => {
+				self.sleep(false, Duration::from_millis(10));
+			},
+		}
+	}
+
+	/// Reducts the signal that was sent.
+	pub fn reciver_reduct(
+		&mut self,
+	) {
+		self.store(false);
+	}
+
+	/// Queries if the signal was sent, NOT what the value of the
+	/// atomic is.
+	pub fn reciver_query(
+		&mut self,
+	) -> bool {
+		self.query(true)
+	}
+
+	/// Enters a spin loop until a signal is sent. Does NOT reduct
+	/// the signal.
+	pub fn receiver_spin(
+		&mut self,
+	) {
+		self.spin(true);
+	}
+
+	/// Enters a temperate sleep until a signal is sent. Does NOT reduct
+	/// the signal.
+	pub fn receiver_wait(
+		&mut self,
+		sleep: AtomicSignalSleep,
+	) {
+		match sleep {
+			AtomicSignalSleep::Spin => {
+				self.spin(true);
+			},
+			AtomicSignalSleep::Quick => {
+				self.sleep(true, Duration::from_millis(1));
+			},
+			AtomicSignalSleep::Rest => {
+				self.sleep(true, Duration::from_millis(10));
+			},
+		}
+	}
+
+	fn store(
+		&self,
+		store: bool,
+	) {
+		self.lock.store(store, atomic::Ordering::Release);
+	}
+	
+	fn query(
+		&self,
+		expecting: bool,
+	) -> bool {
+		self.lock.load(atomic::Ordering::Acquire) == expecting
+	}
+
+	fn spin(
+		&self,
+		expecting: bool,
+	) {
+		let _spin_loop_data = spin_loop_data();
+		while self.lock.load(atomic::Ordering::Acquire) != expecting {
+			spin_loop(&_spin_loop_data)
+		}
+	}
+
+	fn sleep(
+		&self,
+		expecting: bool,
+		duration: Duration,
+	) {
+		while self.lock.load(atomic::Ordering::Acquire) != expecting {
+			thread::sleep(duration);
+		}
 	}
 }
 
@@ -89,9 +228,9 @@ impl<T> AtomicLock<T> {
 	pub fn acquire(
 		&mut self,
 	) -> AtomicGuard<'_, T> {
-		let _spin_loop_data = AtomicLock::<T>::spin_loop_data();
+		let _spin_loop_data = spin_loop_data();
 		while self.compare() {
-			AtomicLock::<T>::spin_loop(&_spin_loop_data)
+			spin_loop(&_spin_loop_data)
 		}
 		AtomicGuard::<'_, T>::new(&self.lock, &mut self.t)
 	}
@@ -102,67 +241,11 @@ impl<T> AtomicLock<T> {
 	fn compare(
 		&self,
 	) -> bool {
-		match self.compare_operation() {
+		match compare_operation(&self.lock) {
 			// CONTINUE
 			Err(_) => true,
 			// ESCAPE
 			Ok(_) => false,
-		}
-	}
-
-	#[cfg(not(feature = "weak-operations"))]
-	/// Uses the standard operation for acquisition.
-	fn compare_operation(
-		&self,
-	) -> Result<bool, bool> {
-		self.lock.compare_exchange(
-			false, true,
-			atomic::Ordering::Acquire,
-			atomic::Ordering::Relaxed,
-		)
-	}
-
-	#[cfg(feature = "weak-operations")]
-	/// Uses a weaker operation for acquisition that
-	/// may skip successful cycles, but is faster on
-	/// some platforms.
-	fn compare_operation(
-		&self,
-	) -> Result<bool, bool> {
-		self.lock.compare_exchange_weak(
-			false, true,
-			atomic::Ordering::Acquire,
-			atomic::Ordering::Relaxed,
-		)
-	}
-
-	#[cfg(not(debug_assertions))]
-	fn spin_loop_data() -> () { () }
-	#[cfg(debug_assertions)]
-	fn spin_loop_data() -> Instant { Instant::now() }
-
-	#[cfg(not(debug_assertions))]
-	/// Standard `spin_loop`.
-	fn spin_loop(
-		_: (),
-	) {
-		hint::spin_loop();
-	}
-
-	#[cfg(debug_assertions)]
-	/// Errors if the `spin_loop` took to much time.
-	fn spin_loop(
-		instant: &Instant,
-	) {
-		hint::spin_loop();
-		if instant.elapsed().as_millis() as u64 > ATOMIC_LOCK_SPIN_MS {
-			let message = "DEADLOCK DETECTED - atomic lock spin_loop took over";
-			error!(
-				"{} {}ms!",
-				message,
-				ATOMIC_LOCK_SPIN_MS,
-			);
-			panic!("DEADLOCK DETECTED - atomic spin_loop took to much time!");
 		}
 	}
 }
@@ -199,6 +282,7 @@ impl<'guard, T> AtomicGuard<'guard, T> {
 	pub fn get<'get>(
 		&'get mut self,
 	) -> &'get mut T {
+		std::thread::sleep(std::time::Duration::from_millis(10));
 		self.t
 	}
 }
@@ -209,5 +293,61 @@ impl<'guard, T> Drop for AtomicGuard<'guard, T> {
 			false,
 			atomic::Ordering::Release,
 		);
+	}
+}
+
+/// Uses the standard operation for acquisition.
+#[cfg(not(feature = "weak-operations"))]
+fn compare_operation(
+	lock: &AtomicBool,
+) -> Result<bool, bool> {
+	lock.compare_exchange(
+		false, true,
+		atomic::Ordering::Acquire,
+		atomic::Ordering::Relaxed,
+	)
+}
+
+/// Uses a weaker operation for acquisition that
+/// may skip successful cycles, but is faster on
+/// some platforms.
+#[cfg(feature = "weak-operations")]
+fn compare_operation(
+	lock: &AtomicBool,
+) -> Result<bool, bool> {
+	lock.compare_exchange_weak(
+		false, true,
+		atomic::Ordering::Acquire,
+		atomic::Ordering::Relaxed,
+	)
+}
+
+#[cfg(not(debug_assertions))]
+fn spin_loop_data() -> () { () }
+#[cfg(debug_assertions)]
+fn spin_loop_data() -> Instant { Instant::now() }
+
+/// Standard `spin_loop`.
+#[cfg(not(debug_assertions))]
+fn spin_loop(
+	_: (),
+) {
+	hint::spin_loop();
+}
+
+/// Errors if the `spin_loop` took to much time.
+#[cfg(debug_assertions)]
+fn spin_loop(
+	instant: &Instant,
+) {
+	hint::spin_loop();
+	if instant.elapsed().as_millis() as u64 > ATOMIC_LOCK_SPIN_MS {
+		let message = "DEADLOCK DETECTED - atomic lock spin_loop took over";
+		error!(
+			"{} {}ms!",
+			message,
+			ATOMIC_LOCK_SPIN_MS,
+		);
+		panic!("DEADLOCK DETECTED - atomic spin_loop took to much time!");
 	}
 }

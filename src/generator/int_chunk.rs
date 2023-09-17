@@ -41,7 +41,6 @@ impl IntermediateChunkRaw {
 		let mut chunk_subsurface = Box::new(ChunkSubsurface::default());
 		let mut chunk_surface = Box::new(ChunkSurface::default());
 		let mut chunk_topical = Box::new(ChunkTopical::default());
-		println!("subsurface");
 		for subsurface in self.subsurface.instances().iter() {
 			let patch_origin = subsurface.patch_gen.patch_gen_data().origin;
 			let offset = TilePositionAbs::new(
