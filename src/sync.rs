@@ -32,8 +32,8 @@ impl<T> AtomicLockPtr<T> {
 	// TODO: ARC? BOXRC? impl drop for this struct should be called on
 	// 		 all copies, which we dont want.
 
-	/// Invalidates this struct as well as all copies.
-	/// This is NOT "safe" unless you gurantee all copies wont be used.
+	/// Invalidates this struct as well as all copies/clones.
+	/// This is NOT "safe" unless you gurantee all copies/clones wont be used.
 	pub fn dealloc(
 		&mut self,
 	) { unsafe {
@@ -44,6 +44,50 @@ impl<T> AtomicLockPtr<T> {
 /// Allows Copy/Clone without dropping T.
 impl<T> Copy for AtomicLockPtr<T> {}
 impl<T> Clone for AtomicLockPtr<T> {
+	fn clone(&self) -> Self {
+		*self
+	}
+}
+
+/// Heaps `AtomicSignal` and allows `self` to be coped and sent
+/// among threads saftly due to atomic guarentees.
+/// 
+/// Make sure all referances to `self` will not be used
+/// after `AtomicSignalPtr::dealloc` is called.
+pub struct AtomicSignalPtr(*mut AtomicSignal);
+unsafe impl Send for AtomicSignalPtr {}
+unsafe impl Sync for AtomicSignalPtr {}
+
+impl AtomicSignalPtr {
+	pub fn new(
+	) -> Self {
+		Self(Box::into_raw(Box::new(
+			AtomicSignal::new(),
+		)))
+	}
+
+	/// Gets the common `AtomicSignal`.
+	pub fn get<'get>(
+		&'get mut self,
+	) -> &'get mut AtomicSignal { unsafe {
+		self.0.as_mut().unwrap_unchecked()
+	}}
+
+	// TODO: ARC? BOXRC? impl drop for this struct should be called on
+	// 		 all copies, which we dont want.
+
+	/// Invalidates this struct as well as all copies/clones.
+	/// This is NOT "safe" unless you gurantee all copies/clones wont be used.
+	pub fn dealloc(
+		&mut self,
+	) { unsafe {
+		drop(Box::from_raw(self.0));
+	}}
+}
+
+/// Allows Copy/Clone without dropping `AtomicSignal`.
+impl Copy for AtomicSignalPtr {}
+impl Clone for AtomicSignalPtr {
 	fn clone(&self) -> Self {
 		*self
 	}
@@ -282,7 +326,6 @@ impl<'guard, T> AtomicGuard<'guard, T> {
 	pub fn get<'get>(
 		&'get mut self,
 	) -> &'get mut T {
-		std::thread::sleep(std::time::Duration::from_millis(10));
 		self.t
 	}
 }
@@ -330,7 +373,7 @@ fn spin_loop_data() -> Instant { Instant::now() }
 /// Standard `spin_loop`.
 #[cfg(not(debug_assertions))]
 fn spin_loop(
-	_: (),
+	_: &(),
 ) {
 	hint::spin_loop();
 }
