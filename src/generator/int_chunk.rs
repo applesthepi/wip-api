@@ -2,7 +2,7 @@ use std::{sync::Arc, mem::MaybeUninit, array};
 
 use wip_primal::{CHUNK_WIDTH, ChunkPositionAbs, TilePositionAbs};
 
-use crate::{IntSubsurface, PhysicalChunk, WorldTile, TileSubsurface, TileSurface, TileTopical, ChunkSubsurface, ChunkSurface, ChunkTopical, RTTerrain, TileTerrain};
+use crate::{IntSubsurface, PhysicalChunk, WorldTile, TileSubsurface, TileSurface, TileTopical, ChunkSubsurface, ChunkSurface, ChunkTopical, RTTerrain, TileTerrain, prelude::{op_11_01, op_11_03}};
 
 // TODO: FIXME
 pub struct IntermediateChunk(pub *mut IntermediateChunkRaw);
@@ -43,6 +43,7 @@ impl IntermediateChunkRaw {
 		let mut chunk_topical = Box::new(ChunkTopical::default());
 		for subsurface in self.subsurface.instances().iter() {
 			let patch_origin = subsurface.patch_gen.patch_gen_data().origin;
+			let height = op_11_03(subsurface.patch_gen.patch_gen_data().height_sample) as u8;
 			let offset = TilePositionAbs::new(
 				patch_origin.x - chunk_tile_position_abs.x,
 				patch_origin.y - chunk_tile_position_abs.y,
