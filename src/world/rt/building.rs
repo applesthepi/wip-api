@@ -18,11 +18,11 @@ impl RTBuilding {
 }
 
 impl RTTile for RTBuilding {
-	fn texture_idx(&self) -> u32 {
-		self.tile.texture_idx
-	}
+	// fn texture_idx(&self) -> u32 {
+	// 	self.tile.texture_idx
+	// }
 
-	fn set(&mut self, texture_idx: u32) {
-		self.tile.texture_idx = texture_idx;
-	}
+	// fn set(&mut self, texture_idx: u32) {
+	// 	self.tile.texture_idx = texture_idx;
+	// }
 }

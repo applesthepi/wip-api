@@ -1,4 +1,4 @@
-use std::{sync::atomic::{AtomicBool, self}, time::{Instant, Duration}, hint, rc::Rc, thread};
+use std::{sync::atomic::{AtomicBool, self}, time::{Instant, Duration}, hint, rc::Rc, thread, pin::Pin, marker::PhantomData};
 
 use bevy::prelude::error;
 
@@ -48,6 +48,113 @@ impl<T> Clone for AtomicLockPtr<T> {
 		*self
 	}
 }
+
+/// Heapped type for single thread use only.
+pub struct RawPtr<T>(*mut T);
+
+impl<T> RawPtr<T> {
+	pub fn new(
+		t: T,
+	) -> Self {
+		Self(Box::into_raw(Box::new(
+			t,
+		)))
+	}
+
+	pub fn get<'get>(
+		&'get mut self,
+	) -> &'get mut T { unsafe {
+		self.0.as_mut().unwrap_unchecked()
+	}}
+
+	// TODO: ARC? BOXRC? impl drop for this struct should be called on
+	// 		 all copies, which we dont want.
+
+	/// Invalidates this struct as well as all copies/clones.
+	/// This is NOT "safe" unless you gurantee all copies/clones wont be used.
+	pub fn dealloc(
+		&mut self,
+	) { unsafe {
+		drop(Box::from_raw(self.0));
+	}}
+
+	/// Invalidates this struct as well as all copies/clones.
+	/// This is NOT "safe" unless you gurantee all copies/clones wont be used.
+	pub fn take(
+		&mut self,
+	) -> Box<T> { unsafe {
+		Box::from_raw(self.0)
+	}}
+}
+
+/// Allows Copy/Clone without dropping T.
+impl<T> Copy for RawPtr<T> {}
+impl<T> Clone for RawPtr<T> {
+	fn clone(&self) -> Self {
+		*self
+	}
+}
+
+// TODO: ===================================================================
+/// Holds local `T` and allows `ROPtr`s to be created as
+/// referances. Make sure `self` is NOT moved in memory
+/// after creating `ROPtr`s! That includes `Vector` reallocation.
+#[derive(Clone)]
+pub struct RODynSrc<T, D: ?Sized>
+(T, PhantomData<D>);
+// TODO: ===================================================================
+impl<T, D: ?Sized> RODynSrc<T, D>
+where
+	*const T: Into<*const D>
+{
+	pub fn new(
+		t: T,
+	) -> Self {
+		Self(t, PhantomData)
+	}
+
+	pub fn make_ref(
+		&self,
+	) -> RORef<*const D> {
+		RORef::<*const D>::from_src(&self.0 as *const _ as *const _)
+	}
+}
+// TODO: ===================================================================
+/// Holds read only ptr to `T` usualy created from `ROSrc`. Make sure
+/// none of `self` is access when `ROSrc` is moved in memory
+/// or dropped.
+pub struct RORef<T: ?Sized>(*const T);
+// TODO: ===================================================================
+impl<T: ?Sized> RORef<T> {
+	/// Create solo ptr, seperate from `ROSrc`.
+	// pub fn new(
+	// 	t: T,
+	// ) -> Self {
+	// 	Self(Box::into_raw(Box::new(t)))
+	// }
+
+	/// Referance `ROSrc`.
+	pub fn from_src(
+		t: *const T,
+	) -> Self {
+		Self(t)
+	}
+
+	pub fn get<'get>(
+		&'get self,
+	) -> &'get T { unsafe {
+		self.0.as_ref().unwrap_unchecked()
+	}}
+}
+// TODO: ===================================================================
+/// Allows Copy/Clone without dropping T.
+impl<T> Copy for RORef<T> {}
+impl<T> Clone for RORef<T> {
+	fn clone(&self) -> Self {
+		*self
+	}
+}
+// TODO: ========================================================
 
 /// Heaps `AtomicSignal` and allows `self` to be coped and sent
 /// among threads saftly due to atomic guarentees.

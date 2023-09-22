@@ -1,80 +1,90 @@
-use std::{sync::Arc, mem::MaybeUninit, array};
-
 use wip_primal::{CHUNK_WIDTH, ChunkPositionAbs, TilePositionAbs};
 
-use crate::{IntSubsurface, PhysicalChunk, WorldTile, TileSubsurface, TileSurface, TileTopical, ChunkSubsurface, ChunkSurface, ChunkTopical, RTTerrain, TileTerrain, prelude::{op_11_01, op_11_03}};
-
-// TODO: FIXME
-pub struct IntermediateChunk(pub *mut IntermediateChunkRaw);
-unsafe impl Send for IntermediateChunk {}
-unsafe impl Sync for IntermediateChunk {}
-impl Copy for IntermediateChunk {}
-impl Clone for IntermediateChunk {
-	fn clone(&self) -> Self {
-		*self
-	}
-}
-
-impl Default for IntermediateChunk {
-	fn default() -> Self {
-		Self(Box::into_raw(Box::new(IntermediateChunkRaw::default())))
-	}
-}
-
-// impl Drop for IntermediateChunk {
-// 	fn drop(&mut self) { unsafe {
-// 		drop(Box::from_raw(self.0));
-// 	}}
-// }
+use crate::{Subsurface, AtomicLockPtr, PhysicalChunk, Gen, RawPtr, EstChunk};
 
 #[derive(Default)]
-pub struct IntermediateChunkRaw {
-	pub subsurface: IntSubsurface,
+pub struct IntermediateChunk {
+	pub subsurface: Subsurface,
 }
 
-impl IntermediateChunkRaw {
+impl IntermediateChunk {
 	pub fn postgen(
-		&self,
+		&mut self,
 		chunk_position_abs: &ChunkPositionAbs,
-	) -> Arc<PhysicalChunk> {
+	) -> AtomicLockPtr<PhysicalChunk> {
 		let chunk_tile_position_abs = TilePositionAbs::from_chunk_abs_lossy(&chunk_position_abs);
-		let mut chunk_subsurface = Box::new(ChunkSubsurface::default());
-		let mut chunk_surface = Box::new(ChunkSurface::default());
-		let mut chunk_topical = Box::new(ChunkTopical::default());
-		for subsurface in self.subsurface.instances().iter() {
-			let patch_origin = subsurface.patch_gen.patch_gen_data().origin;
-			let height = op_11_03(subsurface.patch_gen.patch_gen_data().height_sample) as u8;
-			let offset = TilePositionAbs::new(
-				patch_origin.x - chunk_tile_position_abs.x,
-				patch_origin.y - chunk_tile_position_abs.y,
-			);
-			if offset.x >= 0 &&
-				offset.x < CHUNK_WIDTH as i64 &&
-				offset.y >= 0 &&
-				offset.y < CHUNK_WIDTH as i64 {
-				
-				chunk_subsurface.tiles[offset.x as usize][offset.y as usize].terrain.set_rt(RTTerrain::new(TileTerrain {
-					texture_idx: subsurface.texture_idx as u32,
-					tc_hardness: crate::TCHardness::Soft,
-					work: 10,
-				}));
-			}
-		}
+		let mut est_chunk = RawPtr::new(EstChunk::default());
+		let mut physical_chunk = AtomicLockPtr::new(PhysicalChunk::default());
+		let mut chunk_guard = physical_chunk.acquire();
 
-		let mut tiles: Box<[[WorldTile; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize]> = Box::new(
-			[[WorldTile::default(); CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize],
-		);
+		self.subsurface.generate(&mut chunk_guard, est_chunk.get());
 
-		for y in 0..(CHUNK_WIDTH as usize) {
-			for x in 0..(CHUNK_WIDTH as usize) {
-				tiles[x][y] = WorldTile::new(
-					chunk_subsurface.tiles[x][y].clone(),
-					chunk_surface.tiles[x][y].clone(),
-					chunk_topical.tiles[x][y].clone(),
-				);
-			}
-		}
 
-		Arc::new(PhysicalChunk::new(tiles))
+
+
+
+		// for subsurface in self.subsurface.instances().iter() {
+		// 	// let patch_origin = subsurface.patch_gen.patch_gen_data().origin;
+		// 	// let height = op_11_03(subsurface.patch_gen.patch_gen_data().height_sample) as u8;
+			
+
+		// 	let patch_gen_data = subsurface.patch_gen.patch_gen_data();
+		// 	let offset = TilePositionAbs::new(
+		// 		patch_gen_data.origin.x - chunk_tile_position_abs.x,
+		// 		patch_gen_data.origin.y - chunk_tile_position_abs.y,
+		// 	);
+		// 	if offset.x < 0 ||
+		// 		offset.x >= CHUNK_WIDTH as i64 ||
+		// 		offset.y < 0 ||
+		// 		offset.y >= CHUNK_WIDTH as i64 {
+		// 		continue;
+		// 	}
+		// 	patch_gen_data.
+		// 	let sample_estimation = subsurface.patch_gen.sample_estimation();
+		// 	let (
+		// 		last_estimation,
+		// 		last_patch_gen,
+		// 	) = &mut generation_maps.get().estimation
+		// 		[offset.x as usize]
+		// 		[offset.y as usize];
+		// 	if *last_estimation >= sample_estimation { continue; }
+		// 	*last_estimation = sample_estimation;
+		// 	*last_patch_gen = Some(subsurface.patch_gen.as_ref());
+
+		// 	// if height == 3 {
+		// 	// 	chunk_surface.tiles[offset.x as usize][offset.y as usize].terrain.set_rt(
+		// 	// 		0,
+		// 	// 		RTTerrain::new(TileTerrain {
+		// 	// 			texture_idx: subsurface.texture_idx as u32,
+		// 	// 			tc_hardness: crate::TCHardness::Soft,
+		// 	// 			work: 10,
+		// 	// 		},
+		// 	// 	));
+		// 	// 	continue;
+		// 	// }
+		// 	// chunk_subsurface.tiles[offset.x as usize][offset.y as usize].terrain.set_rt(
+		// 	// 	height,
+		// 	// 	RTTerrain::new(TileTerrain {
+		// 	// 		texture_idx: subsurface.texture_idx as u32,
+		// 	// 		tc_hardness: crate::TCHardness::Soft,
+		// 	// 		work: 10,
+		// 	// 	},
+		// 	// ));
+		// }
+
+		// let mut tiles: Box<[[WorldTile; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize]> = Box::new(
+		// 	[[WorldTile::default(); CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize],
+		// );
+		// let mut physical_chunk = PhysicalChunk::new(tiles);
+
+		
+
+		// for y in 0..(CHUNK_WIDTH as usize) {
+		// 	for x in 0..(CHUNK_WIDTH as usize) {
+		// 		physical_chunk.tiles[x][y].
+		// 	}
+		// }
+		drop(chunk_guard);
+		physical_chunk
 	}
 }

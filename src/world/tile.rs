@@ -1,3 +1,4 @@
+use bevy::prelude::warn;
 use wip_primal::CHUNK_WIDTH;
 use wip_primal::TilePositionRel;
 
@@ -19,9 +20,11 @@ pub use self::structure::*;
 pub use self::item::*;
 pub use self::cover::*;
 
+pub trait Tile {}
+
 pub trait RTTile {
-	fn texture_idx(&self) -> u32;
-	fn set(&mut self, texture_idx: u32);
+	// fn texture_idx(&self) -> u32;
+	// fn set(&mut self, texture_idx: u32);
 }
 
 /// Slice for a tile. Some tile types can have multiple of itself (4 levels of terrain per tile).
@@ -74,12 +77,49 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 
 	pub fn set_rt(
 		&mut self,
+		height: u8,
 		rt: Rt,
 	) {
-		for local_rt in self.slice.iter_mut() {
-			if local_rt.is_none() {
-				*local_rt = Some(rt);
-			}
+		if height >= self.slice.len() as u8 {
+			warn!("tile RT height out of bounds {} >= {}", height, self.slice.len());
+			return;
+		}
+		self.slice[height as usize] = Some(rt);
+	}
+
+	/// Condenses the slice down starting at 0. Does not gurantee that
+	/// there are any cells, only that if there are cells, they are
+	/// condensed down starting at 0.
+	pub fn condense(
+		&mut self,
+	) {
+		debug_assert!(self.slice.len() > 0);
+		if self.slice.len() <= 1 { warn!("attempted to condense slice of length 1"); return; }
+		let mut last_rt_idx = 0;
+		let mut last_rt_set = false;
+
+		// Find a starting point for condensing to start.
+		for (i, rt) in self.slice.iter().enumerate() {
+			if rt.is_some() { continue; }
+			last_rt_idx = i;
+			last_rt_set = true;
+			break;
+		}
+
+		// No condensing needs to be done. Either all slice cells are
+		// full, or only the last one is `None` which is condensed fully.
+		if !last_rt_set || (last_rt_idx + 1) == self.slice.len() {
+			return;
+		}
+
+		// `i` begins at the first `None`. Finds all future `Some`s and brings
+		// them back to `last_rt_idx`.
+		for i in (last_rt_idx + 1)..self.slice.len() {
+			if self.slice[i].as_ref().is_none() { continue; }
+
+			self.slice[last_rt_idx] = self.slice[i];
+			self.slice[i] = None;
+			last_rt_idx += 1;
 		}
 	}
 }
@@ -144,21 +184,25 @@ pub struct WorldTile {
 }
 
 impl WorldTile {
-	pub fn new(
-		tile_subsurface: TileSubsurface,
-		tile_surface: TileSurface,
-		tile_topical: TileTopical,
-	) -> Self {
-		Self {
-			terrain: RTSlice::from_combination(
-				tile_subsurface.terrain,
-				tile_surface.terrain,
-			),
-			item: tile_topical.item,
-			building: tile_topical.building,
-			structure: tile_topical.structure,
-			roof: tile_topical.roof,
-			cover: tile_topical.cover,
-		}
-	}
+	// pub fn new(
+	// 	tile_subsurface: TileSubsurface,
+	// 	tile_surface: TileSurface,
+	// 	tile_topical: TileTopical,
+	// ) -> Self {
+	// 	let mut world_tile = Self {
+	// 		terrain: RTSlice::from_combination(
+	// 			tile_subsurface.terrain,
+	// 			tile_surface.terrain,
+	// 		),
+	// 		item: tile_topical.item,
+	// 		building: tile_topical.building,
+	// 		structure: tile_topical.structure,
+	// 		roof: tile_topical.roof,
+	// 		cover: tile_topical.cover,
+	// 	};
+	// 	world_tile.terrain.condense();
+	// 	world_tile.building.condense();
+	// 	world_tile.cover.condense();
+	// 	world_tile
+	// }
 }

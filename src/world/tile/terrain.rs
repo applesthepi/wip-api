@@ -1,4 +1,4 @@
-use crate::RTTile;
+use crate::{RTTile, Tile};
 
 #[derive(Clone, Copy)]
 pub enum TCHardness {
@@ -13,6 +13,8 @@ pub struct TileTerrain {
 	pub tc_hardness: TCHardness,
 	pub work: u32,
 }
+
+impl Tile for TileTerrain {}
 
 impl Default for TileTerrain {
 	fn default() -> Self {

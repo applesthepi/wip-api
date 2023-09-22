@@ -1,4 +1,4 @@
-use crate::{ChunkGenerator, GeneratorInfo, IntermediateChunk, IntermediateWorld};
+use crate::{ChunkGenerator, GeneratorInfo, IntermediateChunk, IntermediateWorld, RawPtr};
 
 #[derive(Clone, Copy)]
 /// Wrapper for `ChunkGenerator`. Enables the mutable pointer
@@ -24,7 +24,7 @@ impl ChunkGeneratorSingle {
 	pub fn chunk(
 		&mut self,
 		intermediate_world: *mut IntermediateWorld,
-		intermediate_chunk: IntermediateChunk,
+		intermediate_chunk: RawPtr<IntermediateChunk>,
 	) { unsafe {
 		self.0.as_mut().unwrap_unchecked().chunk(
 			intermediate_world,

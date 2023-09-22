@@ -15,6 +15,8 @@ mod pathing;
 
 use wip_primal::ChunkPositionAbs;
 
+use crate::AtomicLockPtr;
+
 pub use self::tile::*;
 pub use self::pt::*;
 pub use self::rt::*;
@@ -36,7 +38,7 @@ impl PhysicalWorld {
 	pub fn get_chunk(
 		&mut self,
 		chunk_position_abs: &ChunkPositionAbs,
-	) -> Option<Arc<PhysicalChunk>> {
+	) -> Option<AtomicLockPtr<PhysicalChunk>> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
 			*in_chunk_position == *chunk_position_abs
@@ -52,7 +54,7 @@ impl PhysicalWorld {
 	pub fn get_chunk_flagback(
 		&mut self,
 		chunk_position_abs: &ChunkPositionAbs,
-	) -> Result<Arc<PhysicalChunk>, GenerationRequest> {
+	) -> Result<AtomicLockPtr<PhysicalChunk>, GenerationRequest> {
 		match self.cached_chunks.cached_chunks.iter().find(
 			|(in_chunk_position, _)|
 			*in_chunk_position == *chunk_position_abs

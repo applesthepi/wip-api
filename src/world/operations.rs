@@ -2,7 +2,7 @@ use std::sync::{Arc, atomic::AtomicBool};
 
 use wip_primal::{TilePositionAbs, ChunkPositionAbs};
 
-use crate::{PhysicalChunk, RTItemState, PathingResult, prelude::{PawnId, ConstructionProgress}};
+use crate::{PhysicalChunk, RTItemState, PathingResult, prelude::{PawnId, ConstructionProgress}, AtomicLockPtr};
 
 //
 // REQUESTS
@@ -104,7 +104,7 @@ pub enum GenericOperation {
 
 #[derive(Clone)]
 pub enum WorldOperation {
-	SpawnedChunk(ChunkPositionAbs, Arc<PhysicalChunk>, Option<Arc<AtomicBool>>),
+	SpawnedChunk(ChunkPositionAbs, AtomicLockPtr<PhysicalChunk>, Option<Arc<AtomicBool>>),
 }
 
 #[derive(Clone)]

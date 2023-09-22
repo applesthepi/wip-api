@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use libloading::Library;
 
-use crate::{Protocol, ProtocolTerrain, ProtocolItem, ProtocolBuilding, ProtocolStructure, ProtocolRoof, ProtocolEntity, ProtocolCover, prelude::ChunkGeneratorSingle};
+use crate::{Protocols, ProtocolTerrain, ProtocolItem, ProtocolBuilding, ProtocolStructure, ProtocolRoof, ProtocolEntity, ProtocolCover, prelude::ChunkGeneratorSingle};
 
 pub struct RegistryBlock(pub *mut RegistryBlockRaw);
 unsafe impl Send for RegistryBlock {}
@@ -35,7 +35,7 @@ pub struct RegistryBlockRaw {
 	// REGISTRY
 
 	pub chunk_generators: Vec<ChunkGeneratorSingle>,
-	pub protocol: Option<Protocol>,
+	pub protocol: Option<Protocols>,
 	pub library: Library,
 }
 
@@ -48,7 +48,7 @@ impl RegistryBlockRaw {
 			folder_name: String::from_str("NULL").unwrap(),
 
 			chunk_generators: Vec::with_capacity(8),
-			protocol: Some(Protocol::new()),
+			protocol: Some(Protocols::new(false)),
 			library,
 		}
 	}
@@ -58,7 +58,7 @@ impl RegistryBlockRaw {
 		protocol_terrain: ProtocolTerrain,
 	) { unsafe {
 		self.protocol.as_mut().unwrap_unchecked().terrain.push(
-			protocol_terrain,
+			Box::new(protocol_terrain),
 		);
 	}}
 
@@ -67,7 +67,7 @@ impl RegistryBlockRaw {
 		protocol_item: ProtocolItem,
 	) { unsafe {
 		self.protocol.as_mut().unwrap_unchecked().items.push(
-			protocol_item,
+			Box::new(protocol_item),
 		);
 	}}
 
@@ -76,7 +76,7 @@ impl RegistryBlockRaw {
 		protocol_building: ProtocolBuilding,
 	) { unsafe {
 		self.protocol.as_mut().unwrap_unchecked().buildings.push(
-			protocol_building,
+			Box::new(protocol_building),
 		);
 	}}
 
@@ -85,7 +85,7 @@ impl RegistryBlockRaw {
 		protocol_structure: ProtocolStructure,
 	) { unsafe {
 		self.protocol.as_mut().unwrap_unchecked().structure.push(
-			protocol_structure,
+			Box::new(protocol_structure),
 		);
 	}}
 
@@ -94,7 +94,7 @@ impl RegistryBlockRaw {
 		protocol_roof: ProtocolRoof,
 	) { unsafe {
 		self.protocol.as_mut().unwrap_unchecked().roofs.push(
-			protocol_roof,
+			Box::new(protocol_roof),
 		);
 	}}
 
@@ -103,7 +103,7 @@ impl RegistryBlockRaw {
 		protocol_entity: ProtocolEntity,
 	) { unsafe {
 		self.protocol.as_mut().unwrap_unchecked().entities.push(
-			protocol_entity,
+			Box::new(protocol_entity),
 		);
 	}}
 
@@ -112,7 +112,7 @@ impl RegistryBlockRaw {
 		protocol_cover: ProtocolCover,
 	) { unsafe {
 		self.protocol.as_mut().unwrap_unchecked().cover.push(
-			protocol_cover,
+			Box::new(protocol_cover),
 		);
 	}}
 }

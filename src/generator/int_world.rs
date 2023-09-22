@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use wip_primal::{SectorPositionAbs, ChunkPositionAbs};
 
-use crate::{IntermediateSector, AtomicLock, AtomicGuard, IntermediateChunk};
+use crate::{IntermediateSector, AtomicLock, AtomicGuard, IntermediateChunk, RawPtr};
 
 /// Wrapper for ease of use due to `AtomicLock`. See
 /// `IntermediateWorldRaw`.
@@ -75,7 +75,7 @@ impl IntermediateWorldRaw {
 	pub fn insert_chunk(
 		&mut self,
 		chunk_position_abs: &ChunkPositionAbs,
-		intermediate_chunk: IntermediateChunk,
+		intermediate_chunk: RawPtr<IntermediateChunk>,
 	) {
 		let sector_position_abs = chunk_position_abs.as_sector();
 		let intermediate_sector = match self.cached_sectors.get_mut(
