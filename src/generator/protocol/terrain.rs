@@ -1,8 +1,9 @@
 use std::{str::FromStr, sync::Arc};
 
+use bevy::prelude::info;
 use wip_primal::{TilePositionRel, TilePositionAbs, ChunkPositionAbs, Bounds};
 
-use crate::{RTTerrain, TileTerrain, TCHardness, ProtocolTerrainForm, ProtocolNoise3d, Protocol, IntermediateChunk, RawPtr, NoiseProxy, Gen, SubsurfaceConfig, prelude::{op_11_03, op_11_01}, ConfigFlat};
+use crate::{RTTerrain, TileTerrain, TCHardness, ProtocolTerrainForm, ProtocolNoise3d, Protocol, IntermediateChunk, RawPtr, NoiseProxy, Gen, SubsurfaceConfig, prelude::{op_11_03, op_11_01}, ConfigFlat, ConfigNoise};
 
 #[derive(Clone)]
 pub struct ProtocolTerrain {
@@ -10,7 +11,6 @@ pub struct ProtocolTerrain {
 	pub tile: TileTerrain,
 	/// Form of terrain has additional configuration.
 	pub form: ProtocolTerrainForm,
-	pub noise: ProtocolNoise3d,
 }
 
 impl ProtocolTerrain {
@@ -18,7 +18,6 @@ impl ProtocolTerrain {
 		name: &str,
 		tile_tc_hardness: TCHardness,
 		tile_work: u32,
-		noise: ProtocolNoise3d,
 		form: ProtocolTerrainForm,
 	) -> Self {
 		Self {
@@ -29,7 +28,6 @@ impl ProtocolTerrain {
 				work: tile_work,
 			},
 			form,
-			noise,
 		}
 	}
 
@@ -41,51 +39,66 @@ impl ProtocolTerrain {
 }
 
 impl Protocol for ProtocolTerrain {
-	fn pregen(
+	fn pregen_chunk(
+		&self,
+		intermediate_chunk: RawPtr<IntermediateChunk>,
+		chunk_position_abs: &ChunkPositionAbs,
+	) {
+		match &self.form {
+			ProtocolTerrainForm::Flat(maps) => {
+				for (
+					height,
+					valid,
+				) in maps.iter() {
+					pregen_chunk_flat(
+						intermediate_chunk,
+						chunk_position_abs,
+						&self,
+						*height,
+						*valid,
+					);
+				}
+			},
+			_ => {},
+		}
+	}
+
+	fn pregen_tile(
 		&self,
 		intermediate_chunk: RawPtr<IntermediateChunk>,
 		chunk_position_abs: &ChunkPositionAbs,
 		tile_position_abs: &TilePositionAbs,
 		tile_position_rel: &TilePositionRel,
 	) {
-		for (
-			map_height,
-			map_valid,
-		) in self.noise.maps.iter() {
-			pregen(
-				intermediate_chunk,
-				chunk_position_abs,
-				tile_position_abs,
-				tile_position_rel,
-				map_height,
-				map_valid,
-				self.tile,
-			);
+		match &self.form {
+			ProtocolTerrainForm::Noise(maps) => {
+				for (
+					height_map,
+					valid_map,
+				) in maps.maps.iter() {
+					pregen_tile_noise(
+						intermediate_chunk,
+						chunk_position_abs,
+						tile_position_abs,
+						tile_position_rel,
+						height_map,
+						valid_map,
+						&self,
+					);
+				}
+			},
+			_ => {},
 		}
 	}
 }
 
-fn pregen(
+fn pregen_chunk_flat(
 	mut intermediate_chunk: RawPtr<IntermediateChunk>,
 	chunk_position_abs: &ChunkPositionAbs,
-	tile_position_abs: &TilePositionAbs,
-	tile_position_rel: &TilePositionRel,
-	map_height: &Arc<dyn NoiseProxy + Send + Sync>,
-	map_valid: &Arc<dyn NoiseProxy + Send + Sync>,
-	tile: TileTerrain,
+	protocol: &ProtocolTerrain,
+	height: u8,
+	est: f32,
 ) {
-	let height_sample = map_height.get(chunk_position_abs, &tile_position_rel) as f32;
-	let valid_sample = map_valid.get(chunk_position_abs, &tile_position_rel) as f32;
-	// let patch_gen_data = PatchGenData {
-	// 	origin: *tile_position_abs,
-	// 	height_sample,
-	// 	valid_sample: map_valid.get(chunk_position_abs, &tile_position_rel) as f32,
-	// 	applied_bounds: Bounds::from_origin(*tile_position_abs, TilePositionAbs::splat(0)),
-	// };
-	let height = op_11_03(height_sample) as u8;
-	if height >= 3 { return; }
-	// TODO: modifiers (ClimateSunlight etc.)
-	let est = op_11_01(valid_sample);
 	intermediate_chunk.get().subsurface.flat.add_form(
 		SubsurfaceConfig {
 			height,
@@ -93,6 +106,34 @@ fn pregen(
 		ConfigFlat {
 			est,
 		},
-		tile,
+		protocol.tile,
+	);
+}
+
+fn pregen_tile_noise(
+	mut intermediate_chunk: RawPtr<IntermediateChunk>,
+	chunk_position_abs: &ChunkPositionAbs,
+	tile_position_abs: &TilePositionAbs,
+	tile_position_rel: &TilePositionRel,
+	map_height: &Arc<dyn NoiseProxy + Send + Sync>,
+	map_valid: &Arc<dyn NoiseProxy + Send + Sync>,
+	protocol: &ProtocolTerrain,
+) {
+	let height_sample = map_height.get(chunk_position_abs, &tile_position_rel) as f32;
+	let valid_sample = map_valid.get(chunk_position_abs, &tile_position_rel) as f32;
+
+	let height = (op_11_03(height_sample) + 0.001).round() as u8;
+	if height >= 3 { return; }
+	// TODO: modifiers (ClimateSunlight etc.)
+	let est = op_11_01(valid_sample);
+	intermediate_chunk.get().subsurface.noise.add_form(
+		SubsurfaceConfig {
+			height,
+		},
+		ConfigNoise {
+			est,
+			rel: *tile_position_rel,
+		},
+		protocol.tile,
 	);
 }

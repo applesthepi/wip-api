@@ -10,12 +10,6 @@ pub use self::patch::*;
 pub use self::noise::*;
 
 pub trait Gen<T: Tile, CF: ConfigForm, C: Config> {
-	fn generate(
-		&self,
-		physical_chunk: &mut AtomicGuard<PhysicalChunk>,
-		est_chunk: &mut EstChunk,
-	);
-
 	fn add_form(
 		&mut self,
 		config_form: CF,

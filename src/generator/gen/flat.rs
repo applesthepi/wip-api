@@ -20,12 +20,6 @@ impl<T: Tile, CF: ConfigForm> GenFlat<T, CF> {
 }
 
 impl<T: Tile, CF: ConfigForm> Gen<T, CF, ConfigFlat> for GenFlat<T, CF> {
-	fn generate(
-		&self,
-		physical_chunk: &mut AtomicGuard<PhysicalChunk>,
-		est_chunk: &mut EstChunk,
-	) {}
-
 	fn add_form(
 		&mut self,
 		config_form: CF,

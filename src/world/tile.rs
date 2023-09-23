@@ -1,6 +1,5 @@
 use bevy::prelude::warn;
 use wip_primal::CHUNK_WIDTH;
-use wip_primal::TilePositionRel;
 
 use crate::{RTTerrain, RTRoof, RTStructure, RTItem, RTCover, RTBuilding};
 

@@ -1,5 +1,3 @@
-
-
 mod terrain;
 mod item;
 mod building;
@@ -24,7 +22,13 @@ pub use self::entity::*;
 pub use self::cover::*;
 
 pub trait Protocol {
-	fn pregen(
+	fn pregen_chunk(
+		&self,
+		intermediate_chunk: RawPtr<IntermediateChunk>,
+		chunk_position_abs: &ChunkPositionAbs,
+	);
+
+	fn pregen_tile(
 		&self,
 		intermediate_chunk: RawPtr<IntermediateChunk>,
 		chunk_position_abs: &ChunkPositionAbs,
