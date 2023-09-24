@@ -51,7 +51,8 @@ impl<T> Clone for AtomicLockPtr<T> {
 
 /// Heapped type for single thread use only.
 pub struct RawPtr<T>(*mut T);
-
+unsafe impl<T> Send for RawPtr<T> {}
+unsafe impl<T> Sync for RawPtr<T> {}
 impl<T> RawPtr<T> {
 	pub fn new(
 		t: T,
@@ -386,6 +387,15 @@ impl<T> AtomicLock<T> {
 		AtomicGuard::<'_, T>::new(&self.lock, &mut self.t)
 	}
 
+	pub fn acquire_toggle(
+		&mut self,
+	) -> AtomicToggle<T> {
+		AtomicToggle::new(
+			&mut self.lock,
+			&mut self.t,
+		)
+	}
+
 	/// Compares the lock value. If it is `false`,
 	/// then set to `true` and return `false` to
 	/// escape the parent loop.
@@ -443,6 +453,74 @@ impl<'guard, T> Drop for AtomicGuard<'guard, T> {
 			false,
 			atomic::Ordering::Release,
 		);
+	}
+}
+
+/// Unsafe toggle for `AtomicLock`. Allows the logic to
+/// lock, release, and get at will. This is very unsafe
+/// and you should try to use `AtomicGuard` instead.
+pub struct AtomicToggle<T> {
+	lock: *mut AtomicBool,
+	t: *mut T,
+}
+
+impl<T> AtomicToggle<T> {
+	fn new(
+		lock: &mut AtomicBool,
+		t: &mut T,
+	) -> Self {
+		Self {
+			lock,
+			t: t as *mut T,
+		}
+	}
+
+	/// This will deadlock if this is called twice. You must
+	/// call release after you are finished with the data.
+	pub fn lock(
+		&self,
+	) {
+		let _spin_loop_data = spin_loop_data();
+		while self.compare() {
+			spin_loop(&_spin_loop_data)
+		}
+	}
+
+	/// Releases owned lock, or forces a premature
+	/// release for an `AtomicGuard`.
+	pub fn release(
+		&self,
+	) { unsafe {
+		(&*self.lock).store(false, atomic::Ordering::Release);
+	}}
+
+	/// This is very unsafe and requires lock to be called
+	/// before and release to be called after.
+	pub fn get_unsafe<'get>(
+		&'get mut self,
+	) -> &'get mut T { unsafe {
+		&mut *self.t
+	}}
+
+	/// Compares the lock value. If it is `false`,
+	/// then set to `true` and return `false` to
+	/// escape the parent loop.
+	fn compare(
+		&self,
+	) -> bool { unsafe {
+		match compare_operation(&*self.lock) {
+			// CONTINUE
+			Err(_) => true,
+			// ESCAPE
+			Ok(_) => false,
+		}
+	}}
+}
+
+impl<T> Copy for AtomicToggle<T> {}
+impl<T> Clone for AtomicToggle<T> {
+	fn clone(&self) -> Self {
+		*self
 	}
 }
 
