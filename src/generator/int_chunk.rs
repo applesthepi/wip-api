@@ -1,10 +1,11 @@
 use wip_primal::CHUNK_WIDTH;
 
-use crate::{Subsurface, AtomicLockPtr, PhysicalChunk, RawPtr, EstChunk};
+use crate::{Subsurface, AtomicLockPtr, PhysicalChunk, RawPtr, EstChunk, Vegitation};
 
 #[derive(Default)]
 pub struct IntermediateChunk {
 	pub subsurface: Subsurface,
+	pub vegitation: Vegitation,
 }
 
 impl IntermediateChunk {
@@ -16,6 +17,7 @@ impl IntermediateChunk {
 		let mut chunk_guard = physical_chunk.acquire();
 
 		self.subsurface.generate(&mut chunk_guard, est_chunk.get());
+		self.vegitation.generate(&mut chunk_guard, est_chunk.get());
 
 		for y in 0..(CHUNK_WIDTH as usize) {
 			for x in 0..(CHUNK_WIDTH as usize) {

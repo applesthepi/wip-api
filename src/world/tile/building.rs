@@ -1,4 +1,4 @@
-use crate::TCHardness;
+use crate::{TCHardness, Tile};
 
 #[derive(Clone, Copy)]
 pub enum BuildingType {
@@ -18,6 +18,8 @@ pub struct TileBuilding {
 	pub force_solo: bool,
 	pub work: u32,
 }
+
+impl Tile for TileBuilding {}
 
 impl Default for TileBuilding {
 	fn default() -> Self {

@@ -4,6 +4,13 @@ mod block;
 pub use self::block::*;
 
 #[derive(Hash, Debug, Default, Clone, PartialEq, Eq)]
+pub struct RTIdent {
+	pub unlocalized_author: String,
+	pub unlocalized_name: String,
+	pub unlocalized_protocol: String,
+}
+
+#[derive(Hash, Debug, Default, Clone, PartialEq, Eq)]
 pub struct ModIdentitifier {
 	unlocalized_name: String,
 	folder_name: String,

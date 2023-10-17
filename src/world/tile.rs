@@ -57,6 +57,12 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 		Some(self.slice.last().unwrap().as_ref().unwrap())
 	}
 
+	pub fn slice<'get>(
+		&'get self,
+	) -> &'get [Option<Rt>; LEN] {
+		&self.slice
+	}
+
 	pub fn from_combination<const LEN1: usize, const LEN2: usize>(
 		rt_slice_1: RTSlice<Rt, LEN1>,
 		rt_slice_2: RTSlice<Rt, LEN2>,
@@ -74,7 +80,7 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 		slice
 	}
 
-	pub fn set_rt(
+	pub fn set_rt_height(
 		&mut self,
 		height: u8,
 		rt: Rt,
@@ -84,6 +90,36 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 			return;
 		}
 		self.slice[height as usize] = Some(rt);
+	}
+
+	pub fn set_rt_lowest(
+		&mut self,
+		rt: Rt,
+	) {
+		{
+			let first = self.slice.first_mut().unwrap();
+			if first.is_none() {
+				*first = Some(rt);
+				return;
+			}
+		}
+		let mut swap_rt = self.slice[0].unwrap();
+		self.slice[0] = Some(rt);
+		let mut idx = 1;
+		loop {
+			if idx == self.slice.len() {
+				warn!("no more space left, an RT will be discarded");
+				return;
+			}
+			if self.slice[idx].is_none() {
+				self.slice[idx] = Some(swap_rt);
+				return;
+			}
+			let nswap = self.slice[idx].unwrap();
+			self.slice[idx] = Some(swap_rt);
+			swap_rt = nswap;
+
+		}
 	}
 
 	/// Condenses the slice down starting at 0. Does not gurantee that

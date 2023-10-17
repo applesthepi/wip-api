@@ -1,21 +1,20 @@
 use bevy::prelude::info;
 use wip_primal::CHUNK_WIDTH;
 
-use crate::{TileTerrain, GenFlat, PhysicalChunk, EstChunk, RawPtr, AtomicGuard, Gen, Config, ConfigForm, ConfigFlat, RTTerrain, GenPatch, GenNoise, ConfigNoise};
+use crate::{TileTerrain, GenFlat, PhysicalChunk, EstChunk, RawPtr, AtomicGuard, Gen, Config, ConfigForm, ConfigFlat, RTTerrain, GenPatch, GenNoise, ConfigNoise, TileBuilding, RTBuilding};
 
-pub struct SubsurfaceConfig {
-	pub height: u8,
+pub struct VegitationConfig {
 }
 
-impl ConfigForm for SubsurfaceConfig {}
+impl ConfigForm for VegitationConfig {}
 
-pub struct Subsurface {
-	pub flat: GenFlat<TileTerrain, SubsurfaceConfig>,
-	pub patch: GenPatch<TileTerrain, SubsurfaceConfig>,
-	pub noise: GenNoise<TileTerrain, SubsurfaceConfig>,
+pub struct Vegitation {
+	pub flat: GenFlat<TileBuilding, VegitationConfig>,
+	pub patch: GenPatch<TileBuilding, VegitationConfig>,
+	pub noise: GenNoise<TileBuilding, VegitationConfig>,
 }
 
-impl Subsurface {
+impl Vegitation {
 	pub fn generate(
 		&mut self,
 		physical_chunk: &mut AtomicGuard<PhysicalChunk>,
@@ -55,7 +54,7 @@ impl Subsurface {
 	}
 }
 
-impl Default for Subsurface {
+impl Default for Vegitation {
 	fn default() -> Self {
 		Self {
 			flat: GenFlat::new(),
@@ -68,19 +67,19 @@ impl Default for Subsurface {
 fn flat(
 	physical_chunk: &mut AtomicGuard<PhysicalChunk>,
 	est_chunk: &mut EstChunk,
-	tile: &TileTerrain,
-	config_form: &SubsurfaceConfig,
+	tile: &TileBuilding,
+	config_form: &VegitationConfig,
 	config: &ConfigFlat,
 ) {
 	for y in 0..(CHUNK_WIDTH as usize) {
 		for x in 0..(CHUNK_WIDTH as usize) {
-			let est = &mut est_chunk.subsurface[config_form.height as usize][x][y];
+			let est = &mut est_chunk.vegitation[x][y];
 			if *est >= config.est { continue; }
 			*est = config.est;
 			let world_tile = &mut physical_chunk.get().tiles[x][y];
-			world_tile.terrain.set_rt_height(
-				config_form.height,
-				RTTerrain::new(*tile),
+			world_tile.building.set_rt_height(
+				0,
+				RTBuilding::new(*tile),
 			);
 		}
 	}
@@ -89,18 +88,18 @@ fn flat(
 fn noise(
 	physical_chunk: &mut AtomicGuard<PhysicalChunk>,
 	est_chunk: &mut EstChunk,
-	tile: &TileTerrain,
-	config_form: &SubsurfaceConfig,
+	tile: &TileBuilding,
+	config_form: &VegitationConfig,
 	config: &ConfigNoise,
 ) {
 	let x = config.rel.x;
 	let y = config.rel.y;
-	let est = &mut est_chunk.subsurface[config_form.height as usize][x as usize][y as usize];
+	let est = &mut est_chunk.vegitation[x as usize][y as usize];
 	if *est >= config.est { return; }
 	*est = config.est;
 	let world_tile = &mut physical_chunk.get().tiles[x as usize][y as usize];
-	world_tile.terrain.set_rt_height(
-		config_form.height,
-		RTTerrain::new(*tile),
+	world_tile.building.set_rt_height(
+		0,
+		RTBuilding::new(*tile),
 	);
 }

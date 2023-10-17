@@ -9,7 +9,6 @@ use crate::{RTTerrain, TileTerrain, TCHardness, ProtocolTerrainForm, ProtocolNoi
 pub struct ProtocolTerrain {
 	pub name: Option<String>,
 	pub tile: TileTerrain,
-	/// Form of terrain has additional configuration.
 	pub form: ProtocolTerrainForm,
 }
 
@@ -29,12 +28,6 @@ impl ProtocolTerrain {
 			},
 			form,
 		}
-	}
-
-	pub fn instantiate(
-		&self,
-	) -> Option<RTTerrain> {
-		Some(RTTerrain::new(self.tile.clone()))
 	}
 }
 

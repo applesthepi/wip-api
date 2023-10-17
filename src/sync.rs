@@ -50,9 +50,9 @@ impl<T> Clone for AtomicLockPtr<T> {
 }
 
 /// Heapped type for single thread use only.
-pub struct RawPtr<T>(*mut T);
-unsafe impl<T> Send for RawPtr<T> {}
-unsafe impl<T> Sync for RawPtr<T> {}
+pub struct RawPtr<T: ?Sized>(*mut T);
+unsafe impl<T: ?Sized> Send for RawPtr<T> {}
+unsafe impl<T: ?Sized> Sync for RawPtr<T> {}
 impl<T> RawPtr<T> {
 	pub fn new(
 		t: T,
@@ -89,8 +89,8 @@ impl<T> RawPtr<T> {
 }
 
 /// Allows Copy/Clone without dropping T.
-impl<T> Copy for RawPtr<T> {}
-impl<T> Clone for RawPtr<T> {
+impl<T: ?Sized> Copy for RawPtr<T> {}
+impl<T: ?Sized> Clone for RawPtr<T> {
 	fn clone(&self) -> Self {
 		*self
 	}

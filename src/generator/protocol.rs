@@ -11,6 +11,7 @@ use wip_primal::TilePositionAbs;
 use wip_primal::TilePositionRel;
 
 use crate::IntermediateChunk;
+use crate::ProtocolEntityForm;
 use crate::RawPtr;
 
 pub use self::terrain::*;
@@ -76,11 +77,26 @@ impl Protocols {
 		for protocol in self.terrain.iter() {
 			self.protocol_ptrs.as_mut().unwrap().push(protocol.clone());
 		}
+		for protocol in self.buildings.iter() {
+			self.protocol_ptrs.as_mut().unwrap().push(protocol.clone());
+		}
 	}
 
 	pub fn get_ptrs<'get>(
 		&'get self,
 	) -> &'get Vec<Box<dyn Protocol>> {
 		self.protocol_ptrs.as_ref().unwrap()
+	}
+
+	pub fn get_entity<'get>(
+		&'get self,
+		name: &str,
+	) -> Option<(&'get ProtocolEntityForm, u32)> {
+		for entity in self.entities.iter() {
+			if entity.name.as_ref().unwrap() == name {
+				return Some((&entity.form, entity.texture_idx));
+			}
+		}
+		None
 	}
 }

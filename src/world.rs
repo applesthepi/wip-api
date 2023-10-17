@@ -12,6 +12,7 @@ mod rt_states;
 mod singles;
 mod operations;
 mod pathing;
+mod commands;
 
 use wip_primal::ChunkPositionAbs;
 
@@ -25,6 +26,7 @@ pub use self::rt_states::*;
 pub use self::singles::*;
 pub use self::operations::*;
 pub use self::pathing::*;
+pub use self::commands::*;
 
 #[derive(Default)]
 pub struct PhysicalWorld {

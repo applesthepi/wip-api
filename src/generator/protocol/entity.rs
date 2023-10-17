@@ -1,30 +1,23 @@
 use std::str::FromStr;
 
-use crate::ProtocolNoise2d;
+use crate::ProtocolEntityForm;
 
 #[derive(Clone)]
 pub struct ProtocolEntity {
 	pub name: Option<String>,
-	// pub tile: TileE,
-	pub noise: ProtocolNoise2d,
+	pub form: ProtocolEntityForm,
+	pub texture_idx: u32,
 }
 
 impl ProtocolEntity {
 	pub fn new(
 		name: &str,
-		noise: ProtocolNoise2d,
+		form: ProtocolEntityForm,
 	) -> Self {
 		Self {
 			name: Some(String::from_str(name).unwrap()),
-			// tile: TileRoof {
-			// },
-			noise,
+			form,
+			texture_idx: 0,
 		}
 	}
-
-	// pub fn instantiate(
-	// 	&self,
-	// ) -> Option<RTRoof> {
-	// 	Some(RTRoof::new(self.tile.clone()))
-	// }
 }
