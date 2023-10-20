@@ -42,6 +42,8 @@ pub enum RTEntityType {
 
 #[derive(Clone)]
 pub struct RTEntity {
+	/// Faction this entity belongs to.
+	pub faction: u32,
 	/// Type of entity (human etc.)
 	pub rt_type: RTEntityType,
 	pub stats: EntityStats,

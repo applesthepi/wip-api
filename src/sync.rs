@@ -63,6 +63,12 @@ impl<T> RawPtr<T> {
 	}
 
 	pub fn get<'get>(
+		&'get self,
+	) -> &'get T { unsafe {
+		self.0.as_ref().unwrap_unchecked()
+	}}
+
+	pub fn get_mut<'get>(
 		&'get mut self,
 	) -> &'get mut T { unsafe {
 		self.0.as_mut().unwrap_unchecked()

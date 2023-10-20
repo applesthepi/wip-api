@@ -1,9 +1,11 @@
+use wip_primal::{EntityPositionAbs, TilePositionAbs};
+
 use crate::RTIdent;
 
 /// Proxy for submitting world commands cross system/api.
 pub struct WorldCommands<'w> {
 	pub spawning_criteria: &'w mut EntitySpawningCriteria,
-	pub commands: &'w mut Vec<WorldCommand>,
+	pub commands: &'w mut Option<Vec<WorldCommand>>,
 }
 
 impl<'w> WorldCommands<'w> {
@@ -11,6 +13,7 @@ impl<'w> WorldCommands<'w> {
 	pub fn entity_register(
 		&mut self,
 		rt_ident: RTIdent,
+		tile_position_abs: TilePositionAbs,
 	) -> u32 {
 		let id = self.spawning_criteria.unused_ids.pop();
 		let id = match id {
@@ -20,8 +23,8 @@ impl<'w> WorldCommands<'w> {
 				self.spawning_criteria.next_id
 			},
 		};
-		self.commands.push(
-			WorldCommand::EntityRegister(id, rt_ident),
+		self.commands.as_mut().unwrap().push(
+			WorldCommand::EntityRegister(id, rt_ident, tile_position_abs),
 		);
 		id
 	}
@@ -31,7 +34,7 @@ impl<'w> WorldCommands<'w> {
 		&mut self,
 		id: u32,
 	) {
-		self.commands.push(
+		self.commands.as_mut().unwrap().push(
 			WorldCommand::EntityDestroy(id),
 		);
 	}
@@ -43,7 +46,7 @@ impl<'w> WorldCommands<'w> {
 		id: u32,
 		entity_state: EntityState,
 	) {
-		self.commands.push(
+		self.commands.as_mut().unwrap().push(
 			WorldCommand::EntitySetState(id, entity_state),
 		);
 	}
@@ -52,7 +55,7 @@ impl<'w> WorldCommands<'w> {
 /// Singular command for the world during runtime.
 pub enum WorldCommand {
 	/// Register entity's existance.
-	EntityRegister(u32, RTIdent),
+	EntityRegister(u32, RTIdent, TilePositionAbs),
 	/// Destroys entity's existance.
 	EntityDestroy(u32),
 	/// Sets how a registered entity is simulated

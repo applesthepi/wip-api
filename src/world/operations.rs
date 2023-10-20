@@ -2,7 +2,7 @@ use std::sync::{Arc, atomic::AtomicBool};
 
 use wip_primal::{TilePositionAbs, ChunkPositionAbs};
 
-use crate::{PhysicalChunk, RTItemState, PathingResult, prelude::{PawnId, ConstructionProgress}, AtomicLockPtr};
+use crate::{PhysicalChunk, RTItemState, PathingResult, prelude::{PawnId, ConstructionProgress}, AtomicLockPtr, RawPtr, Pathing};
 
 //
 // REQUESTS
@@ -16,15 +16,18 @@ pub enum GenericRequest {
 
 #[derive(Clone)]
 pub enum PathingRequest {
-	Path(TilePositionAbs, TilePositionAbs, Arc<PathingResult>),
+	Path(TilePositionAbs, TilePositionAbs),
 }
 
 impl PartialEq for PathingRequest {
 	fn eq(&self, other: &Self) -> bool {
 		match self {
-			PathingRequest::Path(a, b, _) => {
+			PathingRequest::Path(a, b) => {
 				match other {
-					PathingRequest::Path(o_a, o_b, _) => {
+					PathingRequest::Path(
+						o_a,
+						o_b,
+					) => {
 						a == o_a && b == o_b
 					},
 					_ => { false },
@@ -115,4 +118,5 @@ pub enum SavedOperation {
 #[derive(Clone)]
 pub enum PawnOperation {
 	LoadInventoryItem(PawnId, RTItemState),
+	Pathing(RawPtr<Pathing>),
 }

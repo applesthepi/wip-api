@@ -16,8 +16,8 @@ impl IntermediateChunk {
 		let mut physical_chunk = AtomicLockPtr::new(PhysicalChunk::default());
 		let mut chunk_guard = physical_chunk.acquire();
 
-		self.subsurface.generate(&mut chunk_guard, est_chunk.get());
-		self.vegitation.generate(&mut chunk_guard, est_chunk.get());
+		self.subsurface.generate(&mut chunk_guard, est_chunk.get_mut());
+		self.vegitation.generate(&mut chunk_guard, est_chunk.get_mut());
 
 		for y in 0..(CHUNK_WIDTH as usize) {
 			for x in 0..(CHUNK_WIDTH as usize) {

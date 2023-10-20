@@ -16,7 +16,22 @@ pub struct PathingResult {
 }
 
 pub struct Pathing {
-	pub start: TilePositionAbs,
-	pub end: TilePositionAbs,
-	pub path: Vec<GridDirection>,
+	pub src: TilePositionAbs,
+	pub dst: TilePositionAbs,
+	// TODO: relative.
+	// pub path: Vec<GridDirection>,
+	pub path: Vec<TilePositionAbs>,
+}
+
+impl Pathing {
+	pub fn new(
+		src: TilePositionAbs,
+		dst: TilePositionAbs,
+	) -> Self {
+		Self {
+			src,
+			dst,
+			path: Vec::with_capacity(128),
+		}
+	}
 }

@@ -84,7 +84,7 @@ fn pregen_tile_vegitation(
 	// TODO: modifiers (ClimateSunlight etc.)
 	let est = op_11_01(valid_sample);
 	if est < 0.5 { return; }
-	intermediate_chunk.get().vegitation.noise.add_form(
+	intermediate_chunk.get_mut().vegitation.noise.add_form(
 		VegitationConfig {
 		},
 		ConfigNoise {
