@@ -11,13 +11,13 @@ mod structure;
 mod item;
 mod cover;
 
-pub use self::terrain::*;
-pub use self::floor::*;
-pub use self::building::*;
-pub use self::roof::*;
-pub use self::structure::*;
-pub use self::item::*;
-pub use self::cover::*;
+pub use terrain::*;
+pub use floor::*;
+pub use building::*;
+pub use roof::*;
+pub use structure::*;
+pub use item::*;
+pub use cover::*;
 
 pub trait Tile {}
 

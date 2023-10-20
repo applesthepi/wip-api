@@ -1,9 +1,9 @@
 use std::sync::{Arc, atomic::AtomicBool};
 
 // mod lt;
-// pub use self::lt::*;
+// pub use lt::*;
 // mod lt_mod;
-// pub use self::lt_mod::*;
+// pub use lt_mod::*;
 mod tile;
 mod pt;
 mod rt;
@@ -18,15 +18,15 @@ use wip_primal::ChunkPositionAbs;
 
 use crate::AtomicLockPtr;
 
-pub use self::tile::*;
-pub use self::pt::*;
-pub use self::rt::*;
-pub use self::infos::*;
-pub use self::rt_states::*;
-pub use self::singles::*;
-pub use self::operations::*;
-pub use self::pathing::*;
-pub use self::commands::*;
+pub use tile::*;
+pub use pt::*;
+pub use rt::*;
+pub use infos::*;
+pub use rt_states::*;
+pub use singles::*;
+pub use operations::*;
+pub use pathing::*;
+pub use commands::*;
 
 #[derive(Default)]
 pub struct PhysicalWorld {

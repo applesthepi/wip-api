@@ -7,12 +7,12 @@ mod config;
 
 use crate::RawPtr;
 
-pub use self::int_world::*;
-pub use self::int_sector::*;
-pub use self::int_chunk::*;
-pub use self::gen::*;
-pub use self::est_chunk::*;
-pub use self::config::*;
+pub use int_world::*;
+pub use int_sector::*;
+pub use int_chunk::*;
+pub use gen::*;
+pub use est_chunk::*;
+pub use config::*;
 
 pub struct GeneratorInfo<'info> {
 	pub name: &'info str,
@@ -23,10 +23,10 @@ mod sub_protocol;
 mod super_protocol;
 mod form;
 
-pub use self::protocol::*;
-pub use self::sub_protocol::*;
-pub use self::super_protocol::*;
-pub use self::form::*;
+pub use protocol::*;
+pub use sub_protocol::*;
+pub use super_protocol::*;
+pub use form::*;
 
 pub trait ChunkGenerator {
 	fn info(

@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc, hash::Hash};
 
 mod block;
-pub use self::block::*;
+pub use block::*;
 
 #[derive(Hash, Debug, Default, Clone, PartialEq, Eq)]
 pub struct RTIdent {

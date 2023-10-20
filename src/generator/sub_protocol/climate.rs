@@ -1,2 +1,2 @@
 mod sunlight;
-pub use self::sunlight::*;
+pub use sunlight::*;

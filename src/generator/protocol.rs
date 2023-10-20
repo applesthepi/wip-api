@@ -14,13 +14,13 @@ use crate::IntermediateChunk;
 use crate::ProtocolEntityForm;
 use crate::RawPtr;
 
-pub use self::terrain::*;
-pub use self::item::*;
-pub use self::building::*;
-pub use self::structure::*;
-pub use self::roof::*;
-pub use self::entity::*;
-pub use self::cover::*;
+pub use terrain::*;
+pub use item::*;
+pub use building::*;
+pub use structure::*;
+pub use roof::*;
+pub use entity::*;
+pub use cover::*;
 
 pub trait Protocol {
 	fn pregen_chunk(

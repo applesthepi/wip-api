@@ -2,12 +2,6 @@
 #![feature(slice_from_ptr_range)]
 #![feature(extend_one)]
 
-extern crate wip_primal;
-extern crate bevy;
-extern crate noise;
-extern crate num;
-extern crate libloading;
-
 pub mod prelude;
 
 mod generator;

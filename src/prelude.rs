@@ -6,10 +6,10 @@ mod world_op_states;
 mod rendering;
 mod types;
 
-pub use self::ids::*;
-pub use self::world_op_states::*;
-pub use self::rendering::*;
-pub use self::types::*;
+pub use ids::*;
+pub use world_op_states::*;
+pub use rendering::*;
+pub use types::*;
 
 /// Converts from [0.0, 1.0] to [-1.0, 1.0]
 /// # Safty

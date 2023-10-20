@@ -5,9 +5,9 @@ mod flat;
 mod patch;
 mod noise;
 
-pub use self::flat::*;
-pub use self::patch::*;
-pub use self::noise::*;
+pub use flat::*;
+pub use patch::*;
+pub use noise::*;
 
 pub trait Gen<T: Tile, CF: ConfigForm, C: Config> {
 	fn add_form(
