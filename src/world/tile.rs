@@ -21,6 +21,18 @@ pub use self::cover::*;
 
 pub trait Tile {}
 
+#[derive(Clone, Copy)]
+pub enum Order {
+	Mine,
+}
+
+#[derive(Clone, Copy)]
+pub struct RTOrder {
+	pub order: Order,
+}
+
+impl RTTile for RTOrder {}
+
 pub trait RTTile {
 	// fn texture_idx(&self) -> u32;
 	// fn set(&mut self, texture_idx: u32);
@@ -157,6 +169,17 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 			last_rt_idx += 1;
 		}
 	}
+
+	pub fn contains_some(
+		&self,
+	) -> bool {
+		for rt in self.slice.iter() {
+			if rt.is_some() {
+				return true;
+			}
+		}
+		false
+	}
 }
 
 /// Sub surface map of tiles; restricted depth of 3/4 (gurantees surface has atleast one).
@@ -216,6 +239,7 @@ pub struct WorldTile {
 	pub structure: RTSlice<RTStructure, 1>,
 	pub roof: RTSlice<RTRoof, 1>,
 	pub cover: RTSlice<RTCover, 16>,
+	pub order: RTSlice<RTOrder, 8>,
 }
 
 impl WorldTile {
