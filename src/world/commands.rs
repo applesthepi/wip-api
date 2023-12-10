@@ -14,6 +14,7 @@ impl<'w> WorldCommands<'w> {
 		&mut self,
 		rt_ident: RTIdent,
 		tile_position_abs: TilePositionAbs,
+		faction_id: u32,
 	) -> u32 {
 		let id = self.spawning_criteria.unused_ids.pop();
 		let id = match id {
@@ -24,7 +25,7 @@ impl<'w> WorldCommands<'w> {
 			},
 		};
 		self.commands.as_mut().unwrap().push(
-			WorldCommand::EntityRegister(id, rt_ident, tile_position_abs),
+			WorldCommand::EntityRegister(id, faction_id, rt_ident, tile_position_abs),
 		);
 		id
 	}
@@ -55,7 +56,7 @@ impl<'w> WorldCommands<'w> {
 /// Singular command for the world during runtime.
 pub enum WorldCommand {
 	/// Register entity's existance.
-	EntityRegister(u32, RTIdent, TilePositionAbs),
+	EntityRegister(u32, u32, RTIdent, TilePositionAbs),
 	/// Destroys entity's existance.
 	EntityDestroy(u32),
 	/// Sets how a registered entity is simulated

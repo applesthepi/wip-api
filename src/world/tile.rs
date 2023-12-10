@@ -26,6 +26,16 @@ pub enum Order {
 	Mine,
 }
 
+impl Order {
+	pub fn as_str(
+		&self,
+	) -> &'static str {
+		match self {
+			Order::Mine => "mine",
+		}
+	}
+}
+
 #[derive(Clone, Copy)]
 pub struct RTOrder {
 	pub order: Order,

@@ -7,6 +7,8 @@ pub enum BuildingType {
 	Table,
 	Mounted,
 	Ceiling,
+	Tree,
+	Plant,
 }
 
 #[repr(C)]
