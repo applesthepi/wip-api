@@ -34,9 +34,10 @@ impl<'w> WorldCommands<'w> {
 	pub fn entity_destroy(
 		&mut self,
 		id: u32,
+		faction_id: u32,
 	) {
 		self.commands.as_mut().unwrap().push(
-			WorldCommand::EntityDestroy(id),
+			WorldCommand::EntityDestroy(id, faction_id),
 		);
 	}
 
@@ -58,7 +59,7 @@ pub enum WorldCommand {
 	/// Register entity's existance.
 	EntityRegister(u32, u32, RTIdent, TilePositionAbs),
 	/// Destroys entity's existance.
-	EntityDestroy(u32),
+	EntityDestroy(u32, u32),
 	/// Sets how a registered entity is simulated
 	/// in the world.
 	EntitySetState(u32, EntityState),
@@ -82,6 +83,7 @@ pub enum EntityState {
 
 /// Defines how entities are spawned on a low level. Used
 /// to proxy information cross system/api.
+#[derive(Default)]
 pub struct EntitySpawningCriteria {
 	pub unused_ids: Vec<u32>,
 	pub next_id: u32,
