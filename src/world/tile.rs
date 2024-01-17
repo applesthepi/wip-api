@@ -23,6 +23,7 @@ pub trait Tile {}
 
 #[derive(Clone, Copy)]
 pub enum Order {
+	Cancel,
 	Mine,
 }
 
@@ -31,6 +32,7 @@ impl Order {
 		&self,
 	) -> &'static str {
 		match self {
+			Order::Cancel => "cancel",
 			Order::Mine => "mine",
 		}
 	}
@@ -112,6 +114,17 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 			return;
 		}
 		self.slice[height as usize] = Some(rt);
+	}
+
+	pub fn set_rt_quick(
+		&mut self,
+		rt: Rt,
+	) {
+		for cell in self.slice.iter_mut() {
+			if cell.is_some() { continue; }
+			*cell = Some(rt);
+			return;
+		}
 	}
 
 	pub fn set_rt_lowest(
