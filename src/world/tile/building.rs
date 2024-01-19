@@ -1,6 +1,6 @@
 use crate::{TCHardness, Tile};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum BuildingType {
 	Conduit,
 	Floor,

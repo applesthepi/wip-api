@@ -22,6 +22,12 @@ pub use cover::*;
 pub trait Tile {}
 
 #[derive(Clone, Copy)]
+pub enum Action {
+	Order(Order),
+	Construct(u32, BuildingType),
+}
+
+#[derive(Clone, Copy, PartialEq)]
 pub enum Order {
 	Cancel,
 	Mine,
@@ -39,11 +45,11 @@ impl Order {
 }
 
 #[derive(Clone, Copy)]
-pub struct RTOrder {
-	pub order: Order,
+pub struct RTAction {
+	pub action: Action,
 }
 
-impl RTTile for RTOrder {}
+impl RTTile for RTAction {}
 
 pub trait RTTile {
 	// fn texture_idx(&self) -> u32;
@@ -262,7 +268,7 @@ pub struct WorldTile {
 	pub structure: RTSlice<RTStructure, 1>,
 	pub roof: RTSlice<RTRoof, 1>,
 	pub cover: RTSlice<RTCover, 16>,
-	pub order: RTSlice<RTOrder, 8>,
+	pub action: RTSlice<RTAction, 8>,
 }
 
 impl WorldTile {
