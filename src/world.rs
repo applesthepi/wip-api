@@ -13,6 +13,7 @@ mod singles;
 mod operations;
 mod pathing;
 mod commands;
+mod task;
 
 use wip_primal::ChunkPositionAbs;
 
@@ -27,6 +28,7 @@ pub use singles::*;
 pub use operations::*;
 pub use pathing::*;
 pub use commands::*;
+pub use task::*;
 
 #[derive(Default)]
 pub struct PhysicalWorld {

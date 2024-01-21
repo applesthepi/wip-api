@@ -1,9 +1,9 @@
-use crate::{TileStructure, RTTile};
+use crate::TileStructure;
 
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct RTStructure {
 	pub tile: TileStructure,
-	pub selected: bool,
+	pub damage: u32,
 }
 
 impl RTStructure {
@@ -12,17 +12,7 @@ impl RTStructure {
 	) -> Self {
 		Self {
 			tile,
-			selected: false,
+			..Default::default()
 		}
 	}
-}
-
-impl RTTile for RTStructure {
-	// fn texture_idx(&self) -> u32 {
-	// 	self.tile.texture_idx
-	// }
-
-	// fn set(&mut self, texture_idx: u32) {
-	// 	self.tile.texture_idx = texture_idx;
-	// }
 }

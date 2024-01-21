@@ -1,4 +1,4 @@
-use crate::{RTTile, Tile};
+use crate::Tile;
 
 #[derive(Clone, Copy)]
 pub enum TCHardness {

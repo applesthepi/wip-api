@@ -1,7 +1,7 @@
-use bevy::prelude::warn;
+use bevy::prelude::{Entity, warn};
 use wip_primal::CHUNK_WIDTH;
 
-use crate::{RTTerrain, RTRoof, RTStructure, RTItem, RTCover, RTBuilding};
+use crate::{RTTerrain, RTRoof, RTStructure, RTItem, RTCover, RTBuilding, Task, PhysicalOrder};
 
 mod terrain;
 mod floor;
@@ -21,48 +21,13 @@ pub use cover::*;
 
 pub trait Tile {}
 
-#[derive(Clone, Copy)]
-pub enum Action {
-	Order(Order),
-	Construct(u32, BuildingType),
-}
-
-#[derive(Clone, Copy, PartialEq)]
-pub enum Order {
-	Cancel,
-	Mine,
-}
-
-impl Order {
-	pub fn as_str(
-		&self,
-	) -> &'static str {
-		match self {
-			Order::Cancel => "cancel",
-			Order::Mine => "mine",
-		}
-	}
-}
-
-#[derive(Clone, Copy)]
-pub struct RTAction {
-	pub action: Action,
-}
-
-impl RTTile for RTAction {}
-
-pub trait RTTile {
-	// fn texture_idx(&self) -> u32;
-	// fn set(&mut self, texture_idx: u32);
-}
-
 /// Slice for a tile. Some tile types can have multiple of itself (4 levels of terrain per tile).
 #[derive(Clone, Copy)]
-pub struct RTSlice<Rt: RTTile + Clone + Copy, const LEN: usize> {
+pub struct RTSlice<Rt: Clone + Copy, const LEN: usize> {
 	slice: [Option<Rt>; LEN],
 }
 
-impl<Rt: RTTile + Clone + Copy, const LEN: usize> Default for RTSlice<Rt, LEN> {
+impl<Rt: Clone + Copy, const LEN: usize> Default for RTSlice<Rt, LEN> {
 	fn default() -> Self {
 		Self {
 			slice: [None; LEN],
@@ -70,7 +35,7 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> Default for RTSlice<Rt, LEN> {
 	}
 }
 
-impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
+impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 	/// Retrives the highest `RTTile` in the slice.
 	pub fn get_high_rt<'get>(
 		&'get self,
@@ -93,6 +58,12 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 		&self.slice
 	}
 
+	pub fn slice_mut<'get>(
+		&'get mut self,
+	) -> &'get mut [Option<Rt>; LEN] {
+		&mut self.slice
+	}
+
 	pub fn from_combination<const LEN1: usize, const LEN2: usize>(
 		rt_slice_1: RTSlice<Rt, LEN1>,
 		rt_slice_2: RTSlice<Rt, LEN2>,
@@ -108,6 +79,17 @@ impl<Rt: RTTile + Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 			rt_slice
 		};
 		slice
+	}
+
+	pub fn remove_rt_height(
+		&mut self,
+		height: u8,
+	) {
+		if height >= self.slice.len() as u8 {
+			warn!("tile RT height out of bounds {} >= {}", height, self.slice.len());
+			return;
+		}
+		self.slice[height as usize] = None;
 	}
 
 	pub fn set_rt_height(
@@ -268,7 +250,12 @@ pub struct WorldTile {
 	pub structure: RTSlice<RTStructure, 1>,
 	pub roof: RTSlice<RTRoof, 1>,
 	pub cover: RTSlice<RTCover, 16>,
-	pub action: RTSlice<RTAction, 8>,
+	pub order: RTSlice<RTPhysicalOrder, 8>,
+}
+
+#[derive(Copy, Clone)]
+pub struct RTPhysicalOrder {
+	pub physical_order: PhysicalOrder,
 }
 
 impl WorldTile {

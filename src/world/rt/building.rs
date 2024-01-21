@@ -1,4 +1,4 @@
-use crate::{TileBuilding, RTTile};
+use crate::TileBuilding;
 
 #[derive(Clone, Copy)]
 pub struct RTBuilding {
@@ -15,14 +15,4 @@ impl RTBuilding {
 			selected: false,
 		}
 	}
-}
-
-impl RTTile for RTBuilding {
-	// fn texture_idx(&self) -> u32 {
-	// 	self.tile.texture_idx
-	// }
-
-	// fn set(&mut self, texture_idx: u32) {
-	// 	self.tile.texture_idx = texture_idx;
-	// }
 }
