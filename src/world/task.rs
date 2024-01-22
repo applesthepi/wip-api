@@ -1,5 +1,5 @@
 use wip_primal::TilePositionAbs;
-use crate::BuildingType;
+use crate::{BuildingType, WorldTile};
 
 #[derive(Clone)]
 pub enum Action {
@@ -73,6 +73,27 @@ impl PhysicalOrder {
 		match self {
 			PhysicalOrder::Mine(_) => "mine",
 			// PhysicalOrder::Construct(_, _) => "construct",
+		}
+	}
+
+	pub fn with_position(
+		mut self,
+		tile_position_abs: TilePositionAbs,
+	) -> Self {
+		match &mut self {
+			PhysicalOrder::Mine(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
+		}
+		self
+	}
+
+	pub fn validate_tile(
+		&self,
+		world_tile: &WorldTile,
+	) -> bool {
+		match self {
+			PhysicalOrder::Mine(tile_position_abs) => {
+				world_tile.structure.contains_some()
+			},
 		}
 	}
 }

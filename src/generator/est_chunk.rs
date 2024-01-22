@@ -7,4 +7,5 @@ pub struct EstChunk {
 	pub subsurface: [EstMap; 3],
 	pub surface: EstMap,
 	pub vegitation: EstMap,
+	pub mountain: EstMap,
 }

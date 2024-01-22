@@ -80,6 +80,9 @@ impl Protocols {
 		for protocol in self.buildings.iter() {
 			self.protocol_ptrs.as_mut().unwrap().push(protocol.clone());
 		}
+		for protocol in self.structure.iter() {
+			self.protocol_ptrs.as_mut().unwrap().push(protocol.clone());
+		}
 	}
 
 	pub fn get_ptrs<'get>(

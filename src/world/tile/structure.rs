@@ -1,4 +1,4 @@
-use crate::TCHardness;
+use crate::{TCHardness, Tile, TileBuilding};
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -7,6 +7,8 @@ pub struct TileStructure {
 	pub tc_hardness: TCHardness,
 	pub work: u32,
 }
+
+impl Tile for TileStructure {}
 
 impl Default for TileStructure {
 	fn default() -> Self {
