@@ -2,8 +2,8 @@ use crate::RTIdent;
 
 #[derive(Clone, Default)]
 pub enum HumanBuild {
-	#[default]
 	Small,
+	#[default]
 	Medium,
 	Large,
 	Bulk,
@@ -47,8 +47,8 @@ pub struct RTEntity {
 	/// Type of entity (human etc.)
 	pub rt_type: RTEntityType,
 	pub stats: EntityStats,
-	/// Texture idx in protocol's atlas.
-	pub texture_idx: u32,
+	// Texture idx in protocol's atlas.
+	// pub texture_idx: u32,
 }
 
 #[derive(Clone)]

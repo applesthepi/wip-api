@@ -1,20 +1,20 @@
+use bevy::prelude::Event;
 use wip_primal::{EntityPositionAbs, TilePositionAbs};
 
-use crate::RTIdent;
+use crate::{RTEntity, RTIdent};
 
 /// Proxy for submitting world commands cross system/api.
 pub struct WorldCommands<'w> {
 	pub spawning_criteria: &'w mut EntitySpawningCriteria,
-	pub commands: &'w mut Option<Vec<WorldCommand>>,
+	pub commands: &'w mut Vec<WorldCommand>,
 }
 
 impl<'w> WorldCommands<'w> {
-	/// Register entity's existance.
+	/// Register entity's existence.
 	pub fn entity_register(
 		&mut self,
-		rt_ident: RTIdent,
+		rt_entity: RTEntity,
 		tile_position_abs: TilePositionAbs,
-		faction_id: u32,
 	) -> u32 {
 		let id = self.spawning_criteria.unused_ids.pop();
 		let id = match id {
@@ -24,61 +24,35 @@ impl<'w> WorldCommands<'w> {
 				self.spawning_criteria.next_id
 			},
 		};
-		self.commands.as_mut().unwrap().push(
-			WorldCommand::EntityRegister(id, faction_id, rt_ident, tile_position_abs),
+		self.commands.push(
+			WorldCommand::WorldEntity(WorldEntityCommand::Register(id, rt_entity, tile_position_abs)),
 		);
 		id
 	}
 
-	/// Destroys entity's existance.
+	/// Destroys entity's existence.
 	pub fn entity_destroy(
 		&mut self,
 		id: u32,
 		faction_id: u32,
 	) {
-		self.commands.as_mut().unwrap().push(
-			WorldCommand::EntityDestroy(id, faction_id),
-		);
-	}
-
-	/// Sets how a registered entity is simulated
-	/// in the world.
-	pub fn entity_set_state(
-		&mut self,
-		id: u32,
-		entity_state: EntityState,
-	) {
-		self.commands.as_mut().unwrap().push(
-			WorldCommand::EntitySetState(id, entity_state),
+		self.commands.push(
+			WorldCommand::WorldEntity(WorldEntityCommand::Destroy(id, faction_id)),
 		);
 	}
 }
 
 /// Singular command for the world during runtime.
 pub enum WorldCommand {
-	/// Register entity's existance.
-	EntityRegister(u32, u32, RTIdent, TilePositionAbs),
-	/// Destroys entity's existance.
-	EntityDestroy(u32, u32),
-	/// Sets how a registered entity is simulated
-	/// in the world.
-	EntitySetState(u32, EntityState),
+	WorldEntity(WorldEntityCommand),
 }
 
-/// State for how an entity is processed.
-pub enum EntityState {
-	/// Stationary in the world with very
-	/// limited and very low priority processing.
-	Existance,
-	/// Simulated roughly for world movement
-	/// and interactions. Limited and fixed priority.
-	Limited,
-	/// Fully simulated with high priority, no
-	/// rendering capabilities.
-	Process,
-	/// Full high priority processing abilities
-	/// with rendering capabilities.
-	Render,
+#[derive(Event)]
+pub enum WorldEntityCommand {
+	/// Register entity's existence.
+	Register(u32, RTEntity, TilePositionAbs),
+	/// Destroys entity's existence.
+	Destroy(u32, u32),
 }
 
 /// Defines how entities are spawned on a low level. Used
