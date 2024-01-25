@@ -74,4 +74,17 @@ impl GridDirection {
 			GridDirection::NorthWest => false,
 		}
 	}
+
+	pub fn all() -> Vec<Self> {
+		vec![
+			GridDirection::North,
+			GridDirection::NorthEast,
+			GridDirection::East,
+			GridDirection::SouthEast,
+			GridDirection::South,
+			GridDirection::SouthWest,
+			GridDirection::West,
+			GridDirection::NorthWest,
+		]
+	}
 }

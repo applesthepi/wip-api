@@ -7,7 +7,7 @@ use crate::WorldTile;
 pub struct PhysicalChunk {
 	pub tiles: [[WorldTile; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize],
 	pub entities: Vec<u32>,
-	// dirty: bool,
+	pub dirty: bool,
 }
 
 impl PhysicalChunk {
