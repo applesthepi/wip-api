@@ -258,26 +258,27 @@ pub struct RTPhysicalOrder {
 	pub physical_order: PhysicalOrder,
 }
 
+pub enum TileDamageState {
+	None,
+	DamageIdx(u8),
+	Destroyed,
+}
+
 impl WorldTile {
-	// pub fn new(
-	// 	tile_subsurface: TileSubsurface,
-	// 	tile_surface: TileSurface,
-	// 	tile_topical: TileTopical,
-	// ) -> Self {
-	// 	let mut world_tile = Self {
-	// 		terrain: RTSlice::from_combination(
-	// 			tile_subsurface.terrain,
-	// 			tile_surface.terrain,
-	// 		),
-	// 		item: tile_topical.item,
-	// 		building: tile_topical.building,
-	// 		structure: tile_topical.structure,
-	// 		roof: tile_topical.roof,
-	// 		cover: tile_topical.cover,
-	// 	};
-	// 	world_tile.terrain.condense();
-	// 	world_tile.building.condense();
-	// 	world_tile.cover.condense();
-	// 	world_tile
-	// }
+	pub fn damage_structure(
+		&mut self,
+		quantity: u32,
+	) -> TileDamageState {
+		let Some(rt_structure) = self.structure.slice_mut().first_mut().unwrap() else {
+			return TileDamageState::None;
+		};
+		rt_structure.damage += quantity;
+		if rt_structure.damage >= rt_structure.tile.work {
+			self.structure.remove_rt_height(0);
+			return TileDamageState::Destroyed;
+		}
+		let damage_percent = rt_structure.damage as f32 / rt_structure.tile.work as f32;
+		let damage_idx =  (damage_percent * 2.0 + 1.0).round() as u8; // [1..=3]
+		TileDamageState::DamageIdx(damage_idx)
+	}
 }
