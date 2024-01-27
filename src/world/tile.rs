@@ -275,6 +275,17 @@ impl WorldTile {
 		rt_structure.damage += quantity;
 		if rt_structure.damage >= rt_structure.tile.work {
 			self.structure.remove_rt_height(0);
+			let mut remove_order: Vec<usize> = Vec::new();
+			for (i, order) in self.order.slice().iter().enumerate() {
+				let Some(rt_physical_order) = order else { continue; };
+				if let PhysicalOrder::Mine(_) = &rt_physical_order.physical_order {
+					remove_order.push(i);
+				}
+			}
+			let order_slice = self.order.slice_mut();
+			for idx in remove_order {
+				order_slice[idx] = None;
+			}
 			return TileDamageState::Destroyed;
 		}
 		let damage_percent = rt_structure.damage as f32 / rt_structure.tile.work as f32;
