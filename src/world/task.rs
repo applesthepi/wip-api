@@ -57,6 +57,11 @@ impl VirtualOrder {
 			VirtualOrder::Cancel => "cancel",
 		}
 	}
+
+	pub fn all_accessible(
+	) -> &'static[(&'static VirtualOrder, &'static str)] { &[
+		(&VirtualOrder::Cancel, "game/order_cancel.png"),
+	]}
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -75,6 +80,11 @@ impl PhysicalOrder {
 			// PhysicalOrder::Construct(_, _) => "construct",
 		}
 	}
+
+	pub fn all_accessible(
+	) -> &'static[(&'static PhysicalOrder, &'static str)] { &[
+		(&PhysicalOrder::Mine(TilePositionAbs::ZERO), "game/order_mine.png"),
+	]}
 
 	pub fn with_position(
 		mut self,
