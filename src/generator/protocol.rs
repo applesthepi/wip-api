@@ -10,7 +10,7 @@ use wip_primal::ChunkPositionAbs;
 use wip_primal::TilePositionAbs;
 use wip_primal::TilePositionRel;
 
-use crate::IntermediateChunk;
+use crate::{IntermediateChunk, ProtocolIdentifier};
 use crate::ProtocolEntityForm;
 use crate::RawPtr;
 
@@ -21,6 +21,18 @@ pub use structure::*;
 pub use roof::*;
 pub use entity::*;
 pub use cover::*;
+
+#[derive(Hash, Debug, Default, Clone, PartialEq, Eq)]
+pub enum ProtocolGroup {
+	#[default]
+	Terrain,
+	Item,
+	Building,
+	Structure,
+	Roof,
+	Entity,
+	Cover,
+}
 
 pub trait Protocol {
 	fn pregen_chunk(
@@ -102,4 +114,10 @@ impl Protocols {
 		}
 		None
 	}
+}
+
+#[derive(Clone)]
+pub struct DropTable {
+	/// Groups of weighted drops [0.0, 1.0].
+	pub drop_groups: Vec<(f32, Vec<ProtocolIdentifier>)>,
 }

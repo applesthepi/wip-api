@@ -2,7 +2,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use wip_primal::{ChunkPositionAbs, TilePositionAbs, TilePositionRel};
 
-use crate::{ProtocolNoise2d, TileStructure, RTStructure, TCHardness, ProtocolStructureForm, Protocol, ProtocolBuilding, IntermediateChunk, RawPtr, ProtocolBuildingForm, NoiseProxy, VegitationConfig, ConfigNoise, Mountain, MountainConfig, Gen};
+use crate::{ProtocolNoise2d, TileStructure, RTStructure, TCHardness, ProtocolStructureForm, Protocol, ProtocolBuilding, IntermediateChunk, RawPtr, ProtocolBuildingForm, NoiseProxy, VegetationConfig, ConfigNoise, Mountain, MountainConfig, Gen, DropTable};
 use crate::prelude::op_11_01;
 
 #[derive(Clone)]
@@ -10,25 +10,29 @@ pub struct ProtocolStructure {
 	pub name: Option<String>,
 	pub tile: TileStructure,
 	pub form: ProtocolStructureForm,
+	pub drop_table: Option<DropTable>,
 }
 
 impl ProtocolStructure {
 	pub fn new(
-		name: &str,
+		// TODO: REMOVE use of "name/un_protocol" in protocol structs, they should be used
+		//       to register the protocol for the `ProtocolIdentifier`, NOT inside the protocol itself.
+		// TODO: use this instead of "name"
+		un_protocol: impl Into<String>,
 		tile_tc_hardness: TCHardness,
 		tile_work: u32,
 		form: ProtocolStructureForm,
-	) -> Self {
-		Self {
-			name: Some(String::from_str(name).unwrap()),
-			tile: TileStructure {
-				texture_idx: 0,
-				tc_hardness: tile_tc_hardness,
-				work: tile_work,
-			},
-			form,
-		}
-	}
+		drop_table: Option<DropTable>,
+	) -> Self { Self {
+		name: Some(un_protocol.into()),
+		tile: TileStructure {
+			texture_idx: 0,
+			tc_hardness: tile_tc_hardness,
+			work: tile_work,
+		},
+		form,
+		drop_table
+	}}
 }
 
 impl Protocol for ProtocolStructure {

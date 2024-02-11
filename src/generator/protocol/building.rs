@@ -2,7 +2,7 @@ use std::{str::FromStr, sync::Arc};
 
 use wip_primal::{ChunkPositionAbs, TilePositionAbs, TilePositionRel};
 
-use crate::{TileBuilding, ProtocolNoise2d, TCHardness, BuildingType, RTBuilding, Protocol, IntermediateChunk, RawPtr, ProtocolBuildingForm, NoiseProxy, prelude::op_11_01, Gen, VegitationConfig, ConfigNoise};
+use crate::{TileBuilding, ProtocolNoise2d, TCHardness, BuildingType, RTBuilding, Protocol, IntermediateChunk, RawPtr, ProtocolBuildingForm, NoiseProxy, prelude::op_11_01, Gen, VegetationConfig, ConfigNoise};
 
 #[derive(Clone)]
 pub struct ProtocolBuilding {
@@ -84,8 +84,8 @@ fn pregen_tile_vegitation(
 	// TODO: modifiers (ClimateSunlight etc.)
 	let est = op_11_01(valid_sample);
 	if est < 0.5 { return; }
-	intermediate_chunk.get_mut().vegitation.noise.add_form(
-		VegitationConfig {
+	intermediate_chunk.get_mut().vegetation.noise.add_form(
+		VegetationConfig {
 		},
 		ConfigNoise {
 			est,

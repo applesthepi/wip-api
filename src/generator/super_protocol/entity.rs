@@ -1,4 +1,4 @@
-use crate::RTIdent;
+use crate::{ProtocolIdentifier, RTItem, TileItem};
 
 #[derive(Clone, Default)]
 pub enum HumanBuild {
@@ -51,7 +51,7 @@ pub struct RTAttireState {
 
 #[derive(Clone, Default)]
 pub struct RTHumanAttire {
-	pub shoes: Option<RTIdent>,
+	pub shoes: Option<ProtocolIdentifier>,
 }
 
 #[derive(Clone, Default)]
@@ -91,6 +91,12 @@ impl RTEntityType {
 	}
 }
 
+#[derive(Clone, Default)]
+pub struct Inventory {
+	/// Vec<(item, count)>
+	pub items: Vec<(TileItem, u32)>,
+}
+
 #[derive(Clone)]
 pub struct RTEntity {
 	/// Faction this entity belongs to.
@@ -100,6 +106,7 @@ pub struct RTEntity {
 	pub stats: EntityStats,
 	// Texture idx in protocol's atlas.
 	// pub texture_idx: u32,
+	pub inventory: Inventory,
 }
 
 #[derive(Clone)]

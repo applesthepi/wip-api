@@ -37,9 +37,9 @@ impl<Rt: Clone + Copy, const LEN: usize> Default for RTSlice<Rt, LEN> {
 
 impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 	/// Retrives the highest `RTTile` in the slice.
-	pub fn get_high_rt<'get>(
-		&'get self,
-	) -> Option<&'get Rt> {
+	pub fn get_high_rt(
+		&self,
+	) -> Option<&Rt> {
 		for (i, x) in self.slice.iter().enumerate() {
 			if x.is_none() {
 				if i == 0 {
@@ -52,16 +52,34 @@ impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 		Some(self.slice.last().unwrap().as_ref().unwrap())
 	}
 
-	pub fn slice<'get>(
-		&'get self,
-	) -> &'get [Option<Rt>; LEN] {
+	pub fn slice(
+		&self,
+	) -> &[Option<Rt>; LEN] {
 		&self.slice
 	}
 
-	pub fn slice_mut<'get>(
-		&'get mut self,
-	) -> &'get mut [Option<Rt>; LEN] {
+	pub fn slice_mut(
+		&mut self,
+	) -> &mut [Option<Rt>; LEN] {
 		&mut self.slice
+	}
+
+	pub fn single(
+		&self,
+	) -> &Option<Rt> {
+		let Some(first) = self.slice.first() else {
+			panic!("single called on empty slice");
+		};
+		first
+	}
+
+	pub fn single_mut(
+		&mut self,
+	) -> &mut Option<Rt> {
+		let Some(first) = self.slice.first_mut() else {
+			panic!("single_mut called on empty slice");
+		};
+		first
 	}
 
 	pub fn from_combination<const LEN1: usize, const LEN2: usize>(
@@ -193,7 +211,7 @@ impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 	}
 }
 
-/// Sub surface map of tiles; restricted depth of 3/4 (gurantees surface has atleast one).
+/// Sub surface map of tiles; restricted depth of 3/4 (guarantees surface has atleast one).
 #[derive(Default, Clone, Copy)]
 pub struct TileSubsurface {
 	pub terrain: RTSlice<RTTerrain, 3>,

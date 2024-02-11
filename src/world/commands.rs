@@ -1,7 +1,7 @@
 use bevy::prelude::{Commands, Entity, Event};
 use wip_primal::{EntityPositionAbs, TilePositionAbs};
 
-use crate::{RTEntity, RTIdent};
+use crate::{RTEntity, ProtocolIdentifier};
 
 /// Proxy for submitting world commands cross system/api.
 pub struct WorldCommands<'w> {
