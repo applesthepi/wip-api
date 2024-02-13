@@ -15,7 +15,7 @@ impl IntermediateChunk {
 	) -> AtomicLockPtr<PhysicalChunk> {
 		let mut est_chunk = RawPtr::new(EstChunk::default());
 		let mut physical_chunk = AtomicLockPtr::new(PhysicalChunk::default());
-		let mut chunk_guard = physical_chunk.acquire();
+		let mut chunk_guard = physical_chunk.acquire_mut();
 
 		self.subsurface.generate(&mut chunk_guard, est_chunk.get_mut());
 		self.vegetation.generate(&mut chunk_guard, est_chunk.get_mut());
@@ -23,7 +23,7 @@ impl IntermediateChunk {
 
 		for y in 0..(CHUNK_WIDTH as usize) {
 			for x in 0..(CHUNK_WIDTH as usize) {
-				let tile = &mut chunk_guard.get().tiles[x][y];
+				let tile = &mut chunk_guard.tiles[x][y];
 				tile.terrain.condense();
 			}
 		}

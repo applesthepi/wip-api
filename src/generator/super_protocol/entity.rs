@@ -22,6 +22,12 @@ impl HumanBuild {
 	}
 }
 
+#[derive(Clone, Default)]
+pub struct RTHumanBuild {
+	pub human_build: HumanBuild,
+	pub protocol_identifier: ProtocolIdentifier,
+}
+
 #[derive(Clone)]
 pub enum HumanAttire {
 	Shoes,
@@ -56,25 +62,23 @@ pub struct RTHumanAttire {
 
 #[derive(Clone, Default)]
 pub struct RTEntityHuman {
-	pub build: HumanBuild,
+	pub build: RTHumanBuild,
 	pub attire: RTHumanAttire,
 }
 
 impl RTEntityHuman {
 	pub fn get_textures(
 		&self,
-	) -> (String, Vec<String>) {
-		let body = String::from_iter([
-			"human_",
-			self.build.as_prefix_str(),
-		]);
+	) -> RTEntityTextures {
 		let mut extras = Vec::new();
-		if let Some(rt_ident) = &self.attire.shoes {
-
+		if let Some(protocol_identifier) = &self.attire.shoes {
+			extras.push(protocol_identifier.clone());
 		}
-		(body, extras)
+		(self.build.protocol_identifier.clone(), extras)
 	}
 }
+
+pub type RTEntityTextures = (ProtocolIdentifier, Vec<ProtocolIdentifier>);
 
 #[derive(Clone)]
 pub enum RTEntityType {
@@ -84,7 +88,7 @@ pub enum RTEntityType {
 impl RTEntityType {
 	pub fn get_textures(
 		&self,
-	) -> (String, Vec<String>) {
+	) -> RTEntityTextures {
 		match self {
 			RTEntityType::Human(rt_entity_human) => rt_entity_human.get_textures(),
 		}
@@ -94,7 +98,7 @@ impl RTEntityType {
 #[derive(Clone, Default)]
 pub struct Inventory {
 	/// Vec<(item, count)>
-	pub items: Vec<(TileItem, u32)>,
+	pub items: Vec<(ProtocolIdentifier, i32)>,
 }
 
 #[derive(Clone)]

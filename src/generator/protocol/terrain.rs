@@ -7,20 +7,20 @@ use crate::{RTTerrain, TileTerrain, TCHardness, ProtocolTerrainForm, ProtocolNoi
 
 #[derive(Clone)]
 pub struct ProtocolTerrain {
-	pub name: Option<String>,
+	pub un_protocol: String,
 	pub tile: TileTerrain,
 	pub form: ProtocolTerrainForm,
 }
 
 impl ProtocolTerrain {
 	pub fn new(
-		name: &str,
+		un_protocol: impl Into<String>,
 		tile_tc_hardness: TCHardness,
 		tile_work: u32,
 		form: ProtocolTerrainForm,
 	) -> Self {
 		Self {
-			name: Some(String::from_str(name).unwrap()),
+			un_protocol: un_protocol.into(),
 			tile: TileTerrain {
 				texture_idx: 0,
 				tc_hardness: tile_tc_hardness,

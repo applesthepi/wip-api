@@ -103,12 +103,12 @@ impl Protocols {
 		self.protocol_ptrs.as_ref().unwrap()
 	}
 
-	pub fn get_entity<'get>(
-		&'get self,
+	pub fn get_entity(
+		&self,
 		name: &str,
-	) -> Option<(&'get ProtocolEntityForm, u32)> {
+	) -> Option<(&ProtocolEntityForm, u32)> {
 		for entity in self.entities.iter() {
-			if entity.name.as_ref().unwrap() == name {
+			if entity.un_protocol == name {
 				return Some((&entity.form, entity.texture_idx));
 			}
 		}

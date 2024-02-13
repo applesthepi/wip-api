@@ -1,13 +1,14 @@
 use std::{sync::atomic::{AtomicBool, self}, time::{Instant, Duration}, hint, rc::Rc, thread, pin::Pin, marker::PhantomData};
+use std::ops::{Deref, DerefMut};
 
 use bevy::prelude::error;
 
 const ATOMIC_LOCK_SPIN_MS: u64 = 5_000;
 
 /// Heaps `T` and allows `self` to be coped and sent
-/// among threads saftly due to `AtomicLock` guarentees.
+/// among threads saftly due to `AtomicLock` guarantees.
 /// 
-/// Make sure all referances to `self` will not be used
+/// Make sure all references to `self` will not be used
 /// after `AtomicLockPtr::dealloc` is called.
 pub struct AtomicLockPtr<T>(*mut AtomicLock<T>);
 unsafe impl<T> Send for AtomicLockPtr<T> {}
@@ -24,16 +25,23 @@ impl<T> AtomicLockPtr<T> {
 
 	/// Acquires the lock in `AtomicLock`.
 	pub fn acquire(
-		&mut self,
+		&self,
 	) -> AtomicGuard<'_, T> { unsafe {
-		self.0.as_mut().unwrap_unchecked().acquire()
+		self.0.as_ref().unwrap_unchecked().acquire()
+	}}
+
+	/// Acquires the lock in `AtomicLock`.
+	pub fn acquire_mut(
+		&mut self,
+	) -> AtomicGuardMut<'_, T> { unsafe {
+		self.0.as_mut().unwrap_unchecked().acquire_mut()
 	}}
 
 	// TODO: ARC? BOXRC? impl drop for this struct should be called on
 	// 		 all copies, which we dont want.
 
 	/// Invalidates this struct as well as all copies/clones.
-	/// This is NOT "safe" unless you gurantee all copies/clones wont be used.
+	/// This is NOT "safe" unless you guarantee all copies/clones wont be used.
 	pub fn dealloc(
 		&mut self,
 	) { unsafe {
@@ -62,15 +70,15 @@ impl<T> RawPtr<T> {
 		)))
 	}
 
-	pub fn get<'get>(
-		&'get self,
-	) -> &'get T { unsafe {
+	pub fn get(
+		&self,
+	) -> &T { unsafe {
 		self.0.as_ref().unwrap_unchecked()
 	}}
 
-	pub fn get_mut<'get>(
-		&'get mut self,
-	) -> &'get mut T { unsafe {
+	pub fn get_mut(
+		&mut self,
+	) -> &mut T { unsafe {
 		self.0.as_mut().unwrap_unchecked()
 	}}
 
@@ -102,14 +110,11 @@ impl<T: ?Sized> Clone for RawPtr<T> {
 	}
 }
 
-// TODO: ===================================================================
 /// Holds local `T` and allows `ROPtr`s to be created as
-/// referances. Make sure `self` is NOT moved in memory
+/// references. Make sure `self` is NOT moved in memory
 /// after creating `ROPtr`s! That includes `Vector` reallocation.
 #[derive(Clone)]
-pub struct RODynSrc<T, D: ?Sized>
-(T, PhantomData<D>);
-// TODO: ===================================================================
+pub struct RODynSrc<T, D: ?Sized>(T, PhantomData<D>);
 impl<T, D: ?Sized> RODynSrc<T, D>
 where
 	*const T: Into<*const D>
@@ -126,34 +131,33 @@ where
 		RORef::<*const D>::from_src(&self.0 as *const _ as *const _)
 	}
 }
-// TODO: ===================================================================
-/// Holds read only ptr to `T` usualy created from `ROSrc`. Make sure
+
+/// Holds read only ptr to `T` usually created from `ROSrc`. Make sure
 /// none of `self` is access when `ROSrc` is moved in memory
 /// or dropped.
 pub struct RORef<T: ?Sized>(*const T);
-// TODO: ===================================================================
 impl<T: ?Sized> RORef<T> {
-	/// Create solo ptr, seperate from `ROSrc`.
+	/// Create solo ptr, separate from `ROSrc`.
 	// pub fn new(
 	// 	t: T,
 	// ) -> Self {
 	// 	Self(Box::into_raw(Box::new(t)))
 	// }
 
-	/// Referance `ROSrc`.
+	/// Reference `ROSrc`.
 	pub fn from_src(
 		t: *const T,
 	) -> Self {
 		Self(t)
 	}
 
-	pub fn get<'get>(
-		&'get self,
-	) -> &'get T { unsafe {
+	pub fn get(
+		&self,
+	) -> &T { unsafe {
 		self.0.as_ref().unwrap_unchecked()
 	}}
 }
-// TODO: ===================================================================
+
 /// Allows Copy/Clone without dropping T.
 impl<T> Copy for RORef<T> {}
 impl<T> Clone for RORef<T> {
@@ -161,12 +165,11 @@ impl<T> Clone for RORef<T> {
 		*self
 	}
 }
-// TODO: ========================================================
 
 /// Heaps `AtomicSignal` and allows `self` to be coped and sent
-/// among threads saftly due to atomic guarentees.
+/// among threads saftly due to atomic guarantees.
 /// 
-/// Make sure all referances to `self` will not be used
+/// Make sure all references to `self` will not be used
 /// after `AtomicSignalPtr::dealloc` is called.
 pub struct AtomicSignalPtr(*mut AtomicSignal);
 unsafe impl Send for AtomicSignalPtr {}
@@ -181,9 +184,9 @@ impl AtomicSignalPtr {
 	}
 
 	/// Gets the common `AtomicSignal`.
-	pub fn get<'get>(
-		&'get mut self,
-	) -> &'get mut AtomicSignal { unsafe {
+	pub fn get(
+		&mut self,
+	) -> &mut AtomicSignal { unsafe {
 		self.0.as_mut().unwrap_unchecked()
 	}}
 
@@ -191,7 +194,7 @@ impl AtomicSignalPtr {
 	// 		 all copies, which we dont want.
 
 	/// Invalidates this struct as well as all copies/clones.
-	/// This is NOT "safe" unless you gurantee all copies/clones wont be used.
+	/// This is NOT "safe" unless you guarantee all copies/clones wont be used.
 	pub fn dealloc(
 		&mut self,
 	) { unsafe {
@@ -353,10 +356,10 @@ impl AtomicSignal {
 /// 
 /// ### Non-Atomic Operations
 /// - compiler can reorder instructions throughout the whole
-///   program to reduce load or even completley remove some
+///   program to reduce load or even completely remove some
 ///   instructions.
 /// - each thread could access different memory when accessing
-///   data. That data exists in ram and likley multiple locations
+///   data. That data exists in ram and likely multiple locations
 ///   in cache.
 /// - cpu can race data (reading and writing at the same time).
 /// 
@@ -384,13 +387,25 @@ impl<T> AtomicLock<T> {
 	/// Acquires an `AtomicGuard` for this lock. Once
 	/// dropped, the lock will subside.
 	pub fn acquire(
-		&mut self,
+		&self,
 	) -> AtomicGuard<'_, T> {
 		let _spin_loop_data = spin_loop_data();
 		while self.compare() {
 			spin_loop(&_spin_loop_data)
 		}
-		AtomicGuard::<'_, T>::new(&self.lock, &mut self.t)
+		AtomicGuard::<'_, T>::new(&self.lock, &self.t)
+	}
+
+	/// Acquires an `AtomicGuardMut` for this lock. Once
+	/// dropped, the lock will subside.
+	pub fn acquire_mut(
+		&mut self,
+	) -> AtomicGuardMut<'_, T> {
+		let _spin_loop_data = spin_loop_data();
+		while self.compare() {
+			spin_loop(&_spin_loop_data)
+		}
+		AtomicGuardMut::<'_, T>::new(&self.lock, &mut self.t)
 	}
 
 	pub fn acquire_toggle(
@@ -417,39 +432,22 @@ impl<T> AtomicLock<T> {
 	}
 }
 
-/// Writable referance to T from the `AtomicLock`. Once dropped,
+/// Read-Only reference to T from the `AtomicLock`. Once dropped,
 /// the access is over and other threads may `AtomicLock::acquire`.
 pub struct AtomicGuard<'guard, T> {
 	lock: &'guard AtomicBool,
-	t: &'guard mut T,
+	t: &'guard T,
 }
 
 impl<'guard, T> AtomicGuard<'guard, T> {
 	fn new(
 		lock: &'guard AtomicBool,
-		t: &'guard mut T,
+		t: &'guard T,
 	) -> Self {
 		Self {
 			lock,
 			t,
 		}
-	}
-
-	/// Sets the whole T.
-	pub fn set(
-		&'guard mut self,
-		t: T,
-	) {
-		*self.t = t;
-	}
-
-	/// Retrives a mutable referance to T that is safe to
-	/// read and write.
-	/// TODO: 'get + 'guard ???
-	pub fn get<'get>(
-		&'get mut self,
-	) -> &'get mut T {
-		self.t
 	}
 }
 
@@ -459,6 +457,62 @@ impl<'guard, T> Drop for AtomicGuard<'guard, T> {
 			false,
 			atomic::Ordering::Release,
 		);
+	}
+}
+
+impl<'guard, T> Deref for AtomicGuard<'guard, T> {
+	type Target = T;
+
+	fn deref(
+		&self,
+	) -> &Self::Target {
+		&self.t
+	}
+}
+
+/// Writable reference to T from the `AtomicLock`. Once dropped,
+/// the access is over and other threads may `AtomicLock::acquire`.
+pub struct AtomicGuardMut<'guard, T> {
+	lock: &'guard AtomicBool,
+	t: &'guard mut T,
+}
+
+impl<'guard, T> AtomicGuardMut<'guard, T> {
+	fn new(
+		lock: &'guard AtomicBool,
+		t: &'guard mut T,
+	) -> Self {
+		Self {
+			lock,
+			t,
+		}
+	}
+}
+
+impl<'guard, T> Drop for AtomicGuardMut<'guard, T> {
+	fn drop(&mut self) {
+		self.lock.store(
+			false,
+			atomic::Ordering::Release,
+		);
+	}
+}
+
+impl<'guard, T> Deref for AtomicGuardMut<'guard, T> {
+	type Target = T;
+
+	fn deref(
+		&self,
+	) -> &Self::Target {
+		&self.t
+	}
+}
+
+impl<'guard, T> DerefMut for AtomicGuardMut<'guard, T> {
+	fn deref_mut(
+		&mut self,
+	) -> &mut Self::Target {
+		&mut self.t
 	}
 }
 

@@ -7,7 +7,7 @@ use crate::prelude::op_11_01;
 
 #[derive(Clone)]
 pub struct ProtocolStructure {
-	pub name: Option<String>,
+	pub un_protocol: String,
 	pub tile: TileStructure,
 	pub form: ProtocolStructureForm,
 	pub drop_table: Option<DropTable>,
@@ -24,7 +24,7 @@ impl ProtocolStructure {
 		form: ProtocolStructureForm,
 		drop_table: Option<DropTable>,
 	) -> Self { Self {
-		name: Some(un_protocol.into()),
+		un_protocol: un_protocol.into(),
 		tile: TileStructure {
 			texture_idx: 0,
 			tc_hardness: tile_tc_hardness,

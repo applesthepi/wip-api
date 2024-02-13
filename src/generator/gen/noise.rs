@@ -1,6 +1,6 @@
 use wip_primal::TilePositionRel;
 
-use crate::{Gen, Config, Tile, PhysicalChunk, RawPtr, AtomicGuard, EstChunk, ConfigForm};
+use crate::{Gen, Config, Tile, PhysicalChunk, RawPtr, AtomicGuardMut, EstChunk, ConfigForm};
 
 pub struct ConfigNoise {
 	pub est: f32,

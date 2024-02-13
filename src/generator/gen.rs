@@ -1,5 +1,5 @@
 use crate::ConfigForm;
-use crate::{RawPtr, PhysicalChunk, AtomicGuard, EstChunk, Config, Tile};
+use crate::{RawPtr, PhysicalChunk, AtomicGuardMut, EstChunk, Config, Tile};
 
 mod flat;
 mod patch;

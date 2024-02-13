@@ -1,7 +1,7 @@
 use bevy::prelude::info;
 use wip_primal::CHUNK_WIDTH;
 
-use crate::{TileTerrain, GenFlat, PhysicalChunk, EstChunk, RawPtr, AtomicGuard, Gen, Config, ConfigForm, ConfigFlat, RTTerrain, GenPatch, GenNoise, ConfigNoise, TileBuilding, RTBuilding, TileStructure, RTStructure};
+use crate::{TileTerrain, GenFlat, PhysicalChunk, EstChunk, RawPtr, AtomicGuardMut, Gen, Config, ConfigForm, ConfigFlat, RTTerrain, GenPatch, GenNoise, ConfigNoise, TileBuilding, RTBuilding, TileStructure, RTStructure};
 
 pub struct MountainConfig {
 }
@@ -17,7 +17,7 @@ pub struct Mountain {
 impl Mountain {
 	pub fn generate(
 		&mut self,
-		physical_chunk: &mut AtomicGuard<PhysicalChunk>,
+		physical_chunk: &mut AtomicGuardMut<PhysicalChunk>,
 		est_chunk: &mut EstChunk,
 	) {
 		// FLAT
@@ -65,7 +65,7 @@ impl Default for Mountain {
 }
 
 fn flat(
-	physical_chunk: &mut AtomicGuard<PhysicalChunk>,
+	physical_chunk: &mut AtomicGuardMut<PhysicalChunk>,
 	est_chunk: &mut EstChunk,
 	tile: &TileStructure,
 	config_form: &MountainConfig,
@@ -76,7 +76,7 @@ fn flat(
 			let est = &mut est_chunk.mountain[x][y];
 			if *est >= config.est { continue; }
 			*est = config.est;
-			let world_tile = &mut physical_chunk.get().tiles[x][y];
+			let world_tile = &mut physical_chunk.tiles[x][y];
 			world_tile.structure.set_rt_height(
 				0,
 				RTStructure::new(*tile),
@@ -86,7 +86,7 @@ fn flat(
 }
 
 fn noise(
-	physical_chunk: &mut AtomicGuard<PhysicalChunk>,
+	physical_chunk: &mut AtomicGuardMut<PhysicalChunk>,
 	est_chunk: &mut EstChunk,
 	tile: &TileStructure,
 	config_form: &MountainConfig,
@@ -97,7 +97,7 @@ fn noise(
 	let est = &mut est_chunk.mountain[x as usize][y as usize];
 	if *est >= config.est { return; }
 	*est = config.est;
-	let world_tile = &mut physical_chunk.get().tiles[x as usize][y as usize];
+	let world_tile = &mut physical_chunk.tiles[x as usize][y as usize];
 	world_tile.structure.set_rt_height(
 		0,
 		RTStructure::new(*tile),

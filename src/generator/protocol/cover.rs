@@ -4,19 +4,19 @@ use crate::{ProtocolNoise2d, TileCover, RTCover};
 
 #[derive(Clone)]
 pub struct ProtocolCover {
-	pub name: Option<String>,
+	pub un_protocol: String,
 	pub tile: TileCover,
 	pub noise: ProtocolNoise2d,
 }
 
 impl ProtocolCover {
 	pub fn new(
-		name: &str,
+		un_protocol: impl Into<String>,
 		tile_work: u32,
 		noise: ProtocolNoise2d,
 	) -> Self {
 		Self {
-			name: Some(String::from_str(name).unwrap()),
+			un_protocol: un_protocol.into(),
 			tile: TileCover {
 				texture_idx: 0,
 				work: tile_work,

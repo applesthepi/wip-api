@@ -4,33 +4,33 @@ use libloading::Library;
 
 use crate::{Protocols, ProtocolTerrain, ProtocolItem, ProtocolBuilding, ProtocolStructure, ProtocolRoof, ProtocolEntity, ProtocolCover, prelude::ChunkGeneratorSingle};
 
-pub struct RegistryBlock(pub *mut RegistryBlockRaw);
-unsafe impl Send for RegistryBlock {}
-unsafe impl Sync for RegistryBlock {}
-impl Eq for RegistryBlock {}
-impl PartialEq for RegistryBlock {
-	fn eq(&self, other: &Self) -> bool {
-		self.0 == other.0
-	}
-	fn ne(&self, other: &Self) -> bool {
-		self.0 != other.0
-	}
-}
+// pub struct RegistryBlock(pub *mut RegistryBlockRaw);
+// unsafe impl Send for RegistryBlock {}
+// unsafe impl Sync for RegistryBlock {}
+// impl Eq for RegistryBlock {}
+// impl PartialEq for RegistryBlock {
+// 	fn eq(&self, other: &Self) -> bool {
+// 		self.0 == other.0
+// 	}
+// 	fn ne(&self, other: &Self) -> bool {
+// 		self.0 != other.0
+// 	}
+// }
+//
+// impl RegistryBlock {
+// 	pub fn get<'get>(
+// 		&'get mut self,
+// 	) -> &'get mut RegistryBlockRaw { unsafe {
+// 		&mut *self.0
+// 	}}
+// }
 
-impl RegistryBlock {
-	pub fn get<'get>(
-		&'get mut self,
-	) -> &'get mut RegistryBlockRaw { unsafe {
-		&mut *self.0
-	}}
-}
-
-pub struct RegistryBlockRaw {
+pub struct RegistryBlock {
 	
 	// MOD OPTIONS
 
-	pub display_name: String,
-	pub folder_name: String,
+	// pub display_name: String,
+	// pub folder_name: String,
 
 	// REGISTRY
 
@@ -39,15 +39,15 @@ pub struct RegistryBlockRaw {
 	pub library: Library,
 }
 
-impl RegistryBlockRaw {
+impl RegistryBlock {
 	pub fn new(
 		library: Library,
 	) -> Self {
 		Self {
-			display_name: String::from_str("NULL").unwrap(),
-			folder_name: String::from_str("NULL").unwrap(),
+			// display_name: String::from_str("NULL").unwrap(),
+			// folder_name: String::from_str("NULL").unwrap(),
 
-			chunk_generators: Vec::with_capacity(8),
+			chunk_generators: Vec::with_capacity(1),
 			protocol: Some(Protocols::new(false)),
 			library,
 		}

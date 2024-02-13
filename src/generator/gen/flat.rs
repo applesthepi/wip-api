@@ -1,4 +1,4 @@
-use crate::{Gen, Config, Tile, PhysicalChunk, RawPtr, AtomicGuard, EstChunk, ConfigForm};
+use crate::{Gen, Config, Tile, PhysicalChunk, RawPtr, AtomicGuardMut, EstChunk, ConfigForm};
 
 pub struct ConfigFlat {
 	pub est: f32,

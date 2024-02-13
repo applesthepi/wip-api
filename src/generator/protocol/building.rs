@@ -6,14 +6,14 @@ use crate::{TileBuilding, ProtocolNoise2d, TCHardness, BuildingType, RTBuilding,
 
 #[derive(Clone)]
 pub struct ProtocolBuilding {
-	pub name: Option<String>,
+	pub un_protocol: String,
 	pub tile: TileBuilding,
 	pub form: ProtocolBuildingForm,
 }
 
 impl ProtocolBuilding {
 	pub fn new(
-		name: &str,
+		un_protocol: impl Into<String>,
 		tc_hardness: TCHardness,
 		building_type: BuildingType,
 		force_solo: bool,
@@ -21,7 +21,7 @@ impl ProtocolBuilding {
 		form: ProtocolBuildingForm,
 	) -> Self {
 		Self {
-			name: Some(String::from_str(name).unwrap()),
+			un_protocol: un_protocol.into(),
 			tile: TileBuilding {
 				texture_idx: 0,
 				tc_hardness,

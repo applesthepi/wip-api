@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc, hash::Hash};
 
 mod block;
 pub use block::*;
-use crate::ProtocolGroup;
+use crate::{AtomicGuard, AtomicLockPtr, ProtocolGroup, ProtocolItem, ProtocolTerrain};
 
 pub struct StaticProtocolIdentifier {
 	pub static_mod_identifier: StaticModIdentifier,
@@ -92,7 +92,9 @@ impl ModIdentifier {
 }
 
 pub struct Registry {
-	pub blocks: HashMap<ModIdentifier, RegistryBlock>,
+	// TODO: TEMPORARY! REMOVE atomic lock
+	// TODO: PRIVATE ACCESS
+	pub blocks: HashMap<ModIdentifier, AtomicLockPtr<RegistryBlock>>,
 }
 
 impl Registry {
@@ -101,5 +103,15 @@ impl Registry {
 		Self {
 			blocks: HashMap::with_capacity(32),
 		}
+	}
+
+	pub fn block(
+		&self,
+		mod_identifier: &ModIdentifier,
+	) -> Option<AtomicGuard<RegistryBlock>> {
+		let Some(registry_block) = self.blocks.get(mod_identifier) else {
+			return None;
+		};
+		Some(registry_block.acquire())
 	}
 }

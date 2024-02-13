@@ -4,18 +4,18 @@ use crate::ProtocolEntityForm;
 
 #[derive(Clone)]
 pub struct ProtocolEntity {
-	pub name: Option<String>,
+	pub un_protocol: String,
 	pub form: ProtocolEntityForm,
 	pub texture_idx: u32,
 }
 
 impl ProtocolEntity {
 	pub fn new(
-		name: &str,
+		un_protocol: impl Into<String>,
 		form: ProtocolEntityForm,
 	) -> Self {
 		Self {
-			name: Some(String::from_str(name).unwrap()),
+			un_protocol: un_protocol.into(),
 			form,
 			texture_idx: 0,
 		}

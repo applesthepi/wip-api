@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use wip_primal::{SectorPositionAbs, ChunkPositionAbs};
 
-use crate::{IntermediateSector, AtomicLock, AtomicGuard, IntermediateChunk, RawPtr};
+use crate::{IntermediateSector, AtomicLock, AtomicGuardMut, IntermediateChunk, RawPtr};
 
 /// Wrapper for ease of use due to `AtomicLock`. See
 /// `IntermediateWorldRaw`.
@@ -24,8 +24,8 @@ impl IntermediateWorld {
 	/// threads to access it.
 	pub fn world<'guard>(
 		&'guard mut self,
-	) -> AtomicGuard<'guard, IntermediateWorldRaw> {
-		self.0.acquire()
+	) -> AtomicGuardMut<'guard, IntermediateWorldRaw> {
+		self.0.acquire_mut()
 	}
 }
 
