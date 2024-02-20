@@ -6,6 +6,10 @@ mod roof;
 mod entity;
 mod cover;
 
+use bevy::prelude::{error, Vec2};
+use bevy::render::render_resource::encase::private::RuntimeSizedArray;
+use weighted_rand::builder::{NewBuilder, WalkerTableBuilder};
+use weighted_rand::table::WalkerTable;
 use wip_primal::ChunkPositionAbs;
 use wip_primal::TilePositionAbs;
 use wip_primal::TilePositionRel;
@@ -21,6 +25,7 @@ pub use structure::*;
 pub use roof::*;
 pub use entity::*;
 pub use cover::*;
+use rand::random;
 
 #[derive(Hash, Debug, Default, Clone, PartialEq, Eq)]
 pub enum ProtocolGroup {
@@ -118,6 +123,33 @@ impl Protocols {
 
 #[derive(Clone)]
 pub struct DropTable {
-	/// Groups of weighted drops [0.0, 1.0].
-	pub drop_groups: Vec<(f32, Vec<ProtocolIdentifier>)>,
+	weights: Vec<f32>,
+	identifiers: Vec<Vec<ProtocolIdentifier>>,
+}
+
+impl DropTable {
+	pub fn new(
+		drop_groups: Vec<(f32, Vec<ProtocolIdentifier>)>,
+	) -> Self {
+		let (mut weights, identifiers): (Vec<f32>, Vec<Vec<ProtocolIdentifier>>) = drop_groups.into_iter().unzip();
+		for (i, weight) in weights.iter_mut().enumerate() {
+			let scale = identifiers[i].len() as f32;
+			*weight = *weight * scale;
+		}
+		Self {
+			weights,
+			identifiers,
+		}
+	}
+
+	pub fn random(
+		&self,
+	) -> ProtocolIdentifier {
+		let table = WalkerTableBuilder::new(&self.weights).build();
+		let idx = table.next();
+		let drop_group = &self.identifiers[idx];
+		debug_assert!(!drop_group.is_empty());
+		let sub_idx = (random::<f32>() * (drop_group.len() as f32)).floor() as usize;
+		drop_group[sub_idx].clone()
+	}
 }

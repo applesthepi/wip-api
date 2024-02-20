@@ -29,3 +29,5 @@ tokio.workspace = true
 noise.workspace = true
 bevy.workspace = true
 libloading.workspace = true
+weighted_rand.workspace = true
+rand.workspace = true

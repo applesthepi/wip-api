@@ -1,4 +1,5 @@
 use std::{collections::HashMap, sync::Arc, hash::Hash};
+use bevy::prelude::error;
 
 mod block;
 pub use block::*;
@@ -113,5 +114,26 @@ impl Registry {
 			return None;
 		};
 		Some(registry_block.acquire())
+	}
+
+	pub fn item<F: FnOnce(&Box<ProtocolItem>)>(
+		&self,
+		protocol_identifier: ProtocolIdentifier,
+		operation: F,
+	) {
+		let Some(mut block) = self.block(&protocol_identifier.mod_identifier) else {
+			error!("failed to locate mod with identifier {:?}", protocol_identifier.mod_identifier);
+			return;
+		};
+		let Some(protocols) = &block.protocol else {
+			unreachable!();
+		};
+		let Some(protocol) = protocols.items.iter().find(|protocol| {
+			protocol.un_protocol == protocol_identifier.un_protocol
+		}) else {
+			error!("failed to locate protocol {}", protocol_identifier.un_protocol);
+			return;
+		};
+		operation(protocol);
 	}
 }

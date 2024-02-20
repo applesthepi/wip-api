@@ -1,6 +1,6 @@
 use crate::TileStructure;
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct RTStructure {
 	pub tile: TileStructure,
 	pub damage: u32,

@@ -10,7 +10,6 @@ pub struct ProtocolStructure {
 	pub un_protocol: String,
 	pub tile: TileStructure,
 	pub form: ProtocolStructureForm,
-	pub drop_table: Option<DropTable>,
 }
 
 impl ProtocolStructure {
@@ -29,9 +28,9 @@ impl ProtocolStructure {
 			texture_idx: 0,
 			tc_hardness: tile_tc_hardness,
 			work: tile_work,
+			drop_table,
 		},
 		form,
-		drop_table
 	}}
 }
 
@@ -91,6 +90,6 @@ fn pregen_tile_structure(
 			est,
 			rel: *tile_position_rel,
 		},
-		protocol.tile,
+		protocol.tile.clone(),
 	);
 }

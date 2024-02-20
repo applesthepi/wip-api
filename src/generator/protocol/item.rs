@@ -22,9 +22,9 @@ impl ProtocolItem {
 		}
 	}
 
-	// pub fn instantiate(
-	// 	&self,
-	// ) -> Option<RTItem> {
-	// 	Some(RTItem::new(self.tile.clone()))
-	// }
+	pub fn instantiate(
+		&self,
+	) -> RTItem {
+		RTItem::new(self.tile.clone())
+	}
 }

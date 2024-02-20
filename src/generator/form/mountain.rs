@@ -79,7 +79,7 @@ fn flat(
 			let world_tile = &mut physical_chunk.tiles[x][y];
 			world_tile.structure.set_rt_height(
 				0,
-				RTStructure::new(*tile),
+				RTStructure::new(tile.clone()),
 			);
 		}
 	}
@@ -100,6 +100,6 @@ fn noise(
 	let world_tile = &mut physical_chunk.tiles[x as usize][y as usize];
 	world_tile.structure.set_rt_height(
 		0,
-		RTStructure::new(*tile),
+		RTStructure::new(tile.clone()),
 	);
 }

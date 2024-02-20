@@ -1,7 +1,7 @@
 use bevy::prelude::{Entity, warn};
 use wip_primal::CHUNK_WIDTH;
 
-use crate::{RTTerrain, RTRoof, RTStructure, RTItem, RTCover, RTBuilding, Task, PhysicalOrder};
+use crate::{RTTerrain, RTRoof, RTStructure, RTItem, RTCover, RTBuilding, Task, PhysicalOrder, Registry};
 
 mod terrain;
 mod floor;
@@ -22,20 +22,20 @@ pub use cover::*;
 pub trait Tile {}
 
 /// Slice for a tile. Some tile types can have multiple of itself (4 levels of terrain per tile).
-#[derive(Clone, Copy)]
-pub struct RTSlice<Rt: Clone + Copy, const LEN: usize> {
+#[derive(Clone)]
+pub struct RTSlice<Rt: Clone, const LEN: usize> {
 	slice: [Option<Rt>; LEN],
 }
 
-impl<Rt: Clone + Copy, const LEN: usize> Default for RTSlice<Rt, LEN> {
+impl<Rt: Clone, const LEN: usize> Default for RTSlice<Rt, LEN> {
 	fn default() -> Self {
 		Self {
-			slice: [None; LEN],
+			slice: [(); LEN].map(|_| None),
 		}
 	}
 }
 
-impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
+impl<Rt: Clone, const LEN: usize> RTSlice<Rt, LEN> {
 	/// Retrives the highest `RTTile` in the slice.
 	pub fn get_high_rt(
 		&self,
@@ -144,7 +144,7 @@ impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 				return;
 			}
 		}
-		let mut swap_rt = self.slice[0].unwrap();
+		let mut swap_rt = self.slice[0].as_ref().unwrap().clone();
 		self.slice[0] = Some(rt);
 		let mut idx = 1;
 		loop {
@@ -156,10 +156,9 @@ impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 				self.slice[idx] = Some(swap_rt);
 				return;
 			}
-			let nswap = self.slice[idx].unwrap();
+			let nswap = self.slice[idx].as_ref().unwrap().clone();
 			self.slice[idx] = Some(swap_rt);
 			swap_rt = nswap;
-
 		}
 	}
 
@@ -193,7 +192,7 @@ impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 		for i in (last_rt_idx + 1)..self.slice.len() {
 			if self.slice[i].as_ref().is_none() { continue; }
 
-			self.slice[last_rt_idx] = self.slice[i];
+			self.slice[last_rt_idx] = self.slice[i].clone();
 			self.slice[i] = None;
 			last_rt_idx += 1;
 		}
@@ -212,31 +211,31 @@ impl<Rt: Clone + Copy, const LEN: usize> RTSlice<Rt, LEN> {
 }
 
 /// Sub surface map of tiles; restricted depth of 3/4 (guarantees surface has atleast one).
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct TileSubsurface {
 	pub terrain: RTSlice<RTTerrain, 3>,
 }
 
 /// Map for a whole chunk of `TileSubsurface`. Used when mapping to tiles for the `PhysicalChunk`.
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct ChunkSubsurface {
 	pub tiles: [[TileSubsurface; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize],
 }
 
 /// Flat map of surface tiles that will drop down elevation.
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct TileSurface {
 	pub terrain: RTSlice<RTTerrain, 1>,
 }
 
 /// Map for a whole chunk of `TileSurface`. Used when mapping to tiles for the `PhysicalChunk`.
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct ChunkSurface {
 	pub tiles: [[TileSurface; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize],
 }
 
 /// Topical map of features (including items and buildings).
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct TileTopical {
 	pub item: RTSlice<RTItem, 1>,
 	pub building: RTSlice<RTBuilding, 16>,
@@ -246,7 +245,7 @@ pub struct TileTopical {
 }
 
 /// Map for a whole chunk of `TileTopical`. Used when mapping to tiles for the `PhysicalChunk`.
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct ChunkTopical {
 	pub tiles: [[TileTopical; CHUNK_WIDTH as usize]; CHUNK_WIDTH as usize],
 }
@@ -260,7 +259,7 @@ pub enum WTOperation {
 
 /// Tile for `PhysicalChunk`. All tile type specific operations are done
 /// on the `RTSlice`s.
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Clone)]
 pub struct WorldTile {
 	pub terrain: RTSlice<RTTerrain, 4>,
 	pub item: RTSlice<RTItem, 1>,
@@ -286,12 +285,18 @@ impl WorldTile {
 	pub fn damage_structure(
 		&mut self,
 		quantity: u32,
+		registry: &Registry,
 	) -> TileDamageState {
 		let Some(rt_structure) = self.structure.slice_mut().first_mut().unwrap() else {
 			return TileDamageState::None;
 		};
 		rt_structure.damage += quantity;
 		if rt_structure.damage >= rt_structure.tile.work {
+			if let Some(drop_table) = &rt_structure.tile.drop_table {
+				registry.item(drop_table.random(), |protocol| {
+					self.item.set_rt_quick(protocol.instantiate());
+				});
+			}
 			self.structure.remove_rt_height(0);
 			let mut remove_order: Vec<usize> = Vec::new();
 			for (i, order) in self.order.slice().iter().enumerate() {
