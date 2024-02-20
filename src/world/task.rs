@@ -68,6 +68,7 @@ impl VirtualOrder {
 /// Orders that the entities can be given by the player manually.
 pub enum PhysicalOrder {
 	Mine(TilePositionAbs),
+	Pickup(TilePositionAbs),
 	// Construct(u32, BuildingType),
 }
 
@@ -77,6 +78,7 @@ impl PhysicalOrder {
 	) -> &'static str {
 		match self {
 			PhysicalOrder::Mine(_) => "mine",
+			PhysicalOrder::Pickup(_) => "pickup",
 			// PhysicalOrder::Construct(_, _) => "construct",
 		}
 	}
@@ -92,6 +94,7 @@ impl PhysicalOrder {
 	) -> Self {
 		match &mut self {
 			PhysicalOrder::Mine(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
+			PhysicalOrder::Pickup(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
 		}
 		self
 	}
@@ -103,6 +106,9 @@ impl PhysicalOrder {
 		match self {
 			PhysicalOrder::Mine(tile_position_abs) => {
 				world_tile.structure.contains_some()
+			},
+			PhysicalOrder::Pickup(tile_position_abs) => {
+				world_tile.item.contains_some()
 			},
 		}
 	}

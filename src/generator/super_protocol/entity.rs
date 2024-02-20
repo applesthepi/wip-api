@@ -1,4 +1,5 @@
-use crate::{ProtocolIdentifier, RTItem, TileItem};
+use std::slice::Iter;
+use crate::{ModIdentifier, ProtocolGroup, ProtocolIdentifier, RTItem, TileItem};
 
 #[derive(Clone, Default)]
 pub enum HumanBuild {
@@ -95,10 +96,38 @@ impl RTEntityType {
 	}
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct Inventory {
-	/// Vec<(item, count)>
-	pub items: Vec<(ProtocolIdentifier, i32)>,
+	items: Vec<(ProtocolIdentifier, i32)>,
+}
+
+impl Default for Inventory {
+	fn default() -> Self { Self {
+		items: vec![
+			(ProtocolIdentifier::new(ModIdentifier::new("", ""), ProtocolGroup::Item, "test"), 1),
+		],
+	}}
+}
+
+impl Inventory {
+	pub fn items(
+		&self,
+	) -> Iter<(ProtocolIdentifier, i32)> {
+		self.items.iter()
+	}
+
+	pub fn add_item(
+		&mut self,
+		protocol_identifier: ProtocolIdentifier,
+		n: i32,
+	) {
+		for item_set in self.items.iter_mut() {
+			if item_set.0 != protocol_identifier { continue; }
+			item_set.1 += n;
+			return;
+		}
+		self.items.push((protocol_identifier, n));
+	}
 }
 
 #[derive(Clone)]
