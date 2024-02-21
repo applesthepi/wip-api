@@ -99,6 +99,7 @@ impl RTEntityType {
 #[derive(Clone)]
 pub struct Inventory {
 	items: Vec<(ProtocolIdentifier, i32)>,
+	dirty: bool,
 }
 
 impl Default for Inventory {
@@ -106,6 +107,7 @@ impl Default for Inventory {
 		items: vec![
 			(ProtocolIdentifier::new(ModIdentifier::new("", ""), ProtocolGroup::Item, "test"), 1),
 		],
+		dirty: false,
 	}}
 }
 
@@ -116,11 +118,24 @@ impl Inventory {
 		self.items.iter()
 	}
 
+	pub fn dirty(
+		&self,
+	) -> bool {
+		self.dirty
+	}
+
+	pub fn clean(
+		&mut self,
+	) {
+		self.dirty = false;
+	}
+
 	pub fn add_item(
 		&mut self,
 		protocol_identifier: ProtocolIdentifier,
 		n: i32,
 	) {
+		self.dirty = true;
 		for item_set in self.items.iter_mut() {
 			if item_set.0 != protocol_identifier { continue; }
 			item_set.1 += n;
