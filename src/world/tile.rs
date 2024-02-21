@@ -208,6 +208,14 @@ impl<Rt: Clone, const LEN: usize> RTSlice<Rt, LEN> {
 		}
 		false
 	}
+
+	pub fn clear(
+		&mut self,
+	) {
+		for rt in self.slice.iter_mut() {
+			*rt = None;
+		}
+	}
 }
 
 /// Sub surface map of tiles; restricted depth of 3/4 (guarantees surface has atleast one).

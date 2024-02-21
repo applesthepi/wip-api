@@ -1,9 +1,14 @@
 use std::{sync::atomic::{AtomicBool, self}, time::{Instant, Duration}, hint, rc::Rc, thread, pin::Pin, marker::PhantomData};
 use std::ops::{Deref, DerefMut};
+use std::sync::atomic::Ordering;
 
 use bevy::prelude::error;
 
 const ATOMIC_LOCK_SPIN_MS: u64 = 5_000;
+
+const ORDERING_ACQUIRE: Ordering = Ordering::Acquire;//Ordering::SeqCst;
+const ORDERING_RELEASE: Ordering = Ordering::Release;//Ordering::SeqCst;
+const ORDERING_FAILURE: Ordering = Ordering::Relaxed;//Ordering::SeqCst;
 
 /// Heaps `T` and allows `self` to be coped and sent
 /// among threads saftly due to `AtomicLock` guarantees.
@@ -318,14 +323,14 @@ impl AtomicSignal {
 		&self,
 		store: bool,
 	) {
-		self.lock.store(store, atomic::Ordering::Release);
+		self.lock.store(store, ORDERING_RELEASE);
 	}
 	
 	fn query(
 		&self,
 		expecting: bool,
 	) -> bool {
-		self.lock.load(atomic::Ordering::Acquire) == expecting
+		self.lock.load(ORDERING_ACQUIRE) == expecting
 	}
 
 	fn spin(
@@ -333,7 +338,7 @@ impl AtomicSignal {
 		expecting: bool,
 	) {
 		let _spin_loop_data = spin_loop_data();
-		while self.lock.load(atomic::Ordering::Acquire) != expecting {
+		while self.lock.load(ORDERING_ACQUIRE) != expecting {
 			spin_loop(&_spin_loop_data)
 		}
 	}
@@ -343,7 +348,7 @@ impl AtomicSignal {
 		expecting: bool,
 		duration: Duration,
 	) {
-		while self.lock.load(atomic::Ordering::Acquire) != expecting {
+		while self.lock.load(ORDERING_ACQUIRE) != expecting {
 			thread::sleep(duration);
 		}
 	}
@@ -455,7 +460,7 @@ impl<'guard, T> Drop for AtomicGuard<'guard, T> {
 	fn drop(&mut self) {
 		self.lock.store(
 			false,
-			atomic::Ordering::Release,
+			ORDERING_RELEASE,
 		);
 	}
 }
@@ -493,7 +498,7 @@ impl<'guard, T> Drop for AtomicGuardMut<'guard, T> {
 	fn drop(&mut self) {
 		self.lock.store(
 			false,
-			atomic::Ordering::Release,
+			ORDERING_RELEASE,
 		);
 	}
 }
@@ -551,7 +556,7 @@ impl<T> AtomicToggle<T> {
 	pub fn release(
 		&self,
 	) { unsafe {
-		(&*self.lock).store(false, atomic::Ordering::Release);
+		(&*self.lock).store(false, ORDERING_RELEASE);
 	}}
 
 	/// This is very unsafe and requires lock to be called
@@ -605,8 +610,8 @@ fn compare_operation(
 ) -> Result<bool, bool> {
 	lock.compare_exchange_weak(
 		false, true,
-		atomic::Ordering::Acquire,
-		atomic::Ordering::Relaxed,
+		ORDERING_ACQUIRE,
+		ORDERING_FAILURE,
 	)
 }
 
