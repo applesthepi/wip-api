@@ -27,7 +27,7 @@ pub use entity::*;
 pub use cover::*;
 use rand::random;
 
-#[derive(Hash, Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Hash, Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum ProtocolGroup {
 	#[default]
 	Terrain,

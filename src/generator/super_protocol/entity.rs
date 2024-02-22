@@ -118,6 +118,41 @@ impl Inventory {
 		self.items.iter()
 	}
 
+	pub fn item(
+		&self,
+		idx: usize
+	) -> &(ProtocolIdentifier, i32) {
+		&self.items[idx]
+	}
+
+	pub fn drop_idx_count(
+		&mut self,
+		idx: usize,
+		count: i32,
+	) -> Option<(ProtocolIdentifier, i32)> {
+		if idx >= self.items.len() {
+			return None;
+		}
+		let item = &mut self.items[idx];
+		let init_count = item.1;
+		item.1 -= count;
+		if item.1 <= 0 {
+			let valid_drop_count = init_count - item.1.max(0);
+			return Some((self.items.swap_remove(idx).0, valid_drop_count));
+		}
+		return Some((item.0.clone(), count));
+	}
+
+	pub fn drop_idx_all(
+		&mut self,
+		idx: usize,
+	) -> Option<(ProtocolIdentifier, i32)> {
+		if idx >= self.items.len() {
+			return None;
+		}
+		return Some(self.items.swap_remove(idx));
+	}
+
 	pub fn dirty(
 		&self,
 	) -> bool {
