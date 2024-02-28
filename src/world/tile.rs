@@ -281,6 +281,7 @@ pub struct WorldTile {
 #[derive(Copy, Clone)]
 pub struct RTPhysicalOrder {
 	pub physical_order: PhysicalOrder,
+	pub action_entity: Entity,
 }
 
 pub enum TileDamageState {

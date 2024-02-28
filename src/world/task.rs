@@ -25,6 +25,29 @@ impl Task {
 			Task::Intermediate(intermediate_order) => { intermediate_order.as_str() },
 		}
 	}
+
+	pub fn get_position(
+		&self,
+	) -> TilePositionAbs {
+		match self {
+			Task::Work(physical_order) => physical_order.get_position(),
+			Task::Intermediate(intermediate_order) => intermediate_order.get_position(),
+		}
+	}
+
+	pub fn validate_tile(
+		&self,
+		world_tile: &WorldTile,
+	) -> bool {
+		match self {
+			Task::Work(physical_order) => {
+				physical_order.validate_tile(world_tile)
+			},
+			Task::Intermediate(intermediate_order) => {
+				intermediate_order.validate_tile(world_tile)
+			},
+		}
+	}
 }
 
 #[derive(Clone)]
@@ -39,6 +62,25 @@ impl IntermediateOrder {
 	) -> &'static str {
 		match self {
 			IntermediateOrder::Move(_) => "move",
+		}
+	}
+
+	pub fn get_position(
+		&self,
+	) -> TilePositionAbs {
+		match self {
+			IntermediateOrder::Move(tile_position_abs) => *tile_position_abs,
+		}
+	}
+
+	pub fn validate_tile(
+		&self,
+		world_tile: &WorldTile,
+	) -> bool {
+		match self {
+			IntermediateOrder::Move(_) => {
+				!world_tile.structure.contains_some()
+			},
 		}
 	}
 }
@@ -92,11 +134,27 @@ impl PhysicalOrder {
 		mut self,
 		tile_position_abs: TilePositionAbs,
 	) -> Self {
-		match &mut self {
+		self.set_position(tile_position_abs);
+		self
+	}
+
+	pub fn set_position(
+		&mut self,
+		tile_position_abs: TilePositionAbs,
+	) {
+		match self {
 			PhysicalOrder::Mine(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
 			PhysicalOrder::Pickup(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
 		}
-		self
+	}
+
+	pub fn get_position(
+		&self,
+	) -> TilePositionAbs {
+		match self {
+			PhysicalOrder::Mine(tile_position_abs) => *tile_position_abs,
+			PhysicalOrder::Pickup(tile_position_abs) => *tile_position_abs,
+		}
 	}
 
 	pub fn validate_tile(
@@ -104,10 +162,10 @@ impl PhysicalOrder {
 		world_tile: &WorldTile,
 	) -> bool {
 		match self {
-			PhysicalOrder::Mine(tile_position_abs) => {
+			PhysicalOrder::Mine(_) => {
 				world_tile.structure.contains_some()
 			},
-			PhysicalOrder::Pickup(tile_position_abs) => {
+			PhysicalOrder::Pickup(_) => {
 				world_tile.item.contains_some()
 			},
 		}
