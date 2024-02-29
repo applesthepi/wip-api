@@ -1,5 +1,5 @@
 use std::slice::Iter;
-use crate::{ModIdentifier, ProtocolGroup, ProtocolIdentifier, RTItem, TileItem};
+use crate::{ICState, ModIdentifier, ProtocolGroup, ProtocolIdentifier, RTItem, TileItem};
 
 #[derive(Clone, Default)]
 pub enum HumanBuild {
@@ -97,60 +97,70 @@ impl RTEntityType {
 }
 
 #[derive(Clone)]
+pub struct InventorySlot {
+	pub ic_state: ICState,
+	pub idx: u32,
+	pub count: i32,
+}
+
+#[derive(Clone)]
 pub struct Inventory {
-	items: Vec<(ProtocolIdentifier, i32)>,
+	slots: Vec<InventorySlot>,
+
 	dirty: bool,
 }
 
 impl Default for Inventory {
 	fn default() -> Self { Self {
-		items: vec![
-			(ProtocolIdentifier::new(ModIdentifier::new("", ""), ProtocolGroup::Item, "test"), 1),
-		],
+		slots: Vec::new(),
 		dirty: false,
 	}}
 }
 
 impl Inventory {
-	pub fn items(
+	pub fn slots(
 		&self,
-	) -> Iter<(ProtocolIdentifier, i32)> {
-		self.items.iter()
+	) -> Iter<InventorySlot> {
+		self.slots.iter()
 	}
 
-	pub fn item(
+	pub fn slot(
 		&self,
 		idx: usize
-	) -> &(ProtocolIdentifier, i32) {
-		&self.items[idx]
+	) -> &InventorySlot {
+		&self.slots[idx]
 	}
 
 	pub fn drop_idx_count(
 		&mut self,
 		idx: usize,
 		count: i32,
-	) -> Option<(ProtocolIdentifier, i32)> {
-		if idx >= self.items.len() {
+	) -> Option<InventorySlot> {
+		if idx >= self.slots.len() {
 			return None;
 		}
-		let item = &mut self.items[idx];
-		let init_count = item.1;
-		item.1 -= count;
-		if item.1 <= 0 {
-			let valid_drop_count = init_count - item.1.max(0);
-			return Some((self.items.swap_remove(idx).0, valid_drop_count));
+		let inventory_slot = &mut self.slots[idx];
+		let init_count = inventory_slot.count;
+		inventory_slot.count -= count;
+		if inventory_slot.count <= 0 {
+			let valid_drop_count = init_count - inventory_slot.count.max(0);
+			let mut inventory_slot = self.slots.remove(idx);
+			inventory_slot.count = valid_drop_count;
+			return Some(inventory_slot);
 		}
-		return Some((item.0.clone(), count));
+		let mut inventory_slot = inventory_slot.clone();
+		inventory_slot.count = count;
+		return Some(inventory_slot);
 	}
 
 	pub fn drop_idx_all(
 		&mut self,
 		idx: usize,
-	) -> Option<(ProtocolIdentifier, i32)> {
-		if idx >= self.items.len() {
+	) -> Option<InventorySlot> {
+		if idx >= self.slots.len() {
 			return None;
 		}
-		return Some(self.items.swap_remove(idx));
+		return Some(self.slots.swap_remove(idx));
 	}
 
 	pub fn dirty(
@@ -165,18 +175,22 @@ impl Inventory {
 		self.dirty = false;
 	}
 
-	pub fn add_item(
+	pub fn add_slot_rt(
 		&mut self,
-		protocol_identifier: ProtocolIdentifier,
-		n: i32,
+		rt_item: &RTItem,
 	) {
+		let inventory_slot = InventorySlot {
+			ic_state: rt_item.tile.ic_state.clone(),
+			idx: rt_item.tile.texture_idx,
+			count: rt_item.count,
+		};
 		self.dirty = true;
-		for item_set in self.items.iter_mut() {
-			if item_set.0 != protocol_identifier { continue; }
-			item_set.1 += n;
+		for item_set in self.slots.iter_mut() {
+			if item_set.idx != inventory_slot.idx { continue; }
+			item_set.count += inventory_slot.count;
 			return;
 		}
-		self.items.push((protocol_identifier, n));
+		self.slots.push(inventory_slot);
 	}
 }
 

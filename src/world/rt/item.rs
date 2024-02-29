@@ -3,7 +3,7 @@ use crate::TileItem;
 #[derive(Clone, Copy)]
 pub struct RTItem {
 	pub tile: TileItem,
-	pub selected: bool,
+	pub count: i32,
 }
 
 impl RTItem {
@@ -12,7 +12,7 @@ impl RTItem {
 	) -> Self {
 		Self {
 			tile,
-			selected: false,
+			count: 1,
 		}
 	}
 }
