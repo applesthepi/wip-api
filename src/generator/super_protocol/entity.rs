@@ -1,7 +1,7 @@
 use std::slice::Iter;
-use crate::{ICState, ModIdentifier, ProtocolGroup, ProtocolIdentifier, RTItem, TileItem};
+use crate::{EquippedICState, ICState, ModIdentifier, ProtocolGroup, ProtocolIdentifier, RTItem, TileItem};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq)]
 pub enum HumanBuild {
 	Small,
 	#[default]
@@ -58,7 +58,10 @@ pub struct RTAttireState {
 
 #[derive(Clone, Default)]
 pub struct RTHumanAttire {
-	pub shoes: Option<ProtocolIdentifier>,
+	pub shoes: Option<u32>,
+	pub pants: Option<u32>,
+	pub shirt: Option<u32>,
+	pub vest: Option<u32>,
 }
 
 #[derive(Clone, Default)]
@@ -73,13 +76,28 @@ impl RTEntityHuman {
 	) -> RTEntityTextures {
 		let mut extras = Vec::new();
 		if let Some(protocol_identifier) = &self.attire.shoes {
-			extras.push(protocol_identifier.clone());
+			extras.push(*protocol_identifier);
+		}
+		if let Some(protocol_identifier) = &self.attire.pants {
+			extras.push(*protocol_identifier);
+		}
+		if let Some(protocol_identifier) = &self.attire.shirt {
+			extras.push(*protocol_identifier);
+		}
+		if let Some(protocol_identifier) = &self.attire.vest {
+			extras.push(*protocol_identifier);
 		}
 		(self.build.protocol_identifier.clone(), extras)
 	}
+
+	pub fn clear_attire(
+		&mut self,
+	) {
+		self.attire = RTHumanAttire::default();
+	}
 }
 
-pub type RTEntityTextures = (ProtocolIdentifier, Vec<ProtocolIdentifier>);
+pub type RTEntityTextures = (ProtocolIdentifier, Vec<u32>);
 
 #[derive(Clone)]
 pub enum RTEntityType {
@@ -94,6 +112,12 @@ impl RTEntityType {
 			RTEntityType::Human(rt_entity_human) => rt_entity_human.get_textures(),
 		}
 	}
+
+	pub fn clear_attire(
+		&mut self,
+	) { match self {
+		RTEntityType::Human(rt_entity_human) => rt_entity_human.clear_attire(),
+	}}
 }
 
 #[derive(Clone)]
@@ -196,13 +220,9 @@ impl Inventory {
 
 #[derive(Clone)]
 pub struct RTEntity {
-	/// Faction this entity belongs to.
 	pub faction: u32,
-	/// Type of entity (human etc.)
 	pub rt_type: RTEntityType,
 	pub stats: EntityStats,
-	// Texture idx in protocol's atlas.
-	// pub texture_idx: u32,
 	pub inventory: Inventory,
 }
 
