@@ -132,12 +132,14 @@ pub struct Inventory {
 	slots: Vec<InventorySlot>,
 
 	dirty: bool,
+	dirty_world_entity: bool,
 }
 
 impl Default for Inventory {
 	fn default() -> Self { Self {
 		slots: Vec::new(),
 		dirty: false,
+		dirty_world_entity: false,
 	}}
 }
 
@@ -163,6 +165,7 @@ impl Inventory {
 		if idx >= self.slots.len() {
 			return None;
 		}
+		self.dirty_world_entity = true;
 		let inventory_slot = &mut self.slots[idx];
 		let init_count = inventory_slot.count;
 		inventory_slot.count -= count;
@@ -184,6 +187,7 @@ impl Inventory {
 		if idx >= self.slots.len() {
 			return None;
 		}
+		self.dirty_world_entity = true;
 		return Some((self.slots.swap_remove(idx), true));
 	}
 
@@ -193,10 +197,22 @@ impl Inventory {
 		self.dirty
 	}
 
+	pub fn dirty_world_entity(
+		&self,
+	) -> bool {
+		self.dirty_world_entity
+	}
+
 	pub fn clean(
 		&mut self,
 	) {
 		self.dirty = false;
+	}
+
+	pub fn clean_world_entity(
+		&mut self,
+	) {
+		self.dirty_world_entity = false;
 	}
 
 	pub fn add_slot_rt(
@@ -209,6 +225,7 @@ impl Inventory {
 			count: rt_item.count,
 		};
 		self.dirty = true;
+		self.dirty_world_entity = true;
 		for item_set in self.slots.iter_mut() {
 			if item_set.idx != inventory_slot.idx { continue; }
 			item_set.count += inventory_slot.count;
