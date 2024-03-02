@@ -159,7 +159,7 @@ impl Inventory {
 		&mut self,
 		idx: usize,
 		count: i32,
-	) -> Option<InventorySlot> {
+	) -> Option<(InventorySlot, bool)> {
 		if idx >= self.slots.len() {
 			return None;
 		}
@@ -170,21 +170,21 @@ impl Inventory {
 			let valid_drop_count = init_count - inventory_slot.count.max(0);
 			let mut inventory_slot = self.slots.remove(idx);
 			inventory_slot.count = valid_drop_count;
-			return Some(inventory_slot);
+			return Some((inventory_slot, true));
 		}
 		let mut inventory_slot = inventory_slot.clone();
 		inventory_slot.count = count;
-		return Some(inventory_slot);
+		return Some((inventory_slot, false));
 	}
 
 	pub fn drop_idx_all(
 		&mut self,
 		idx: usize,
-	) -> Option<InventorySlot> {
+	) -> Option<(InventorySlot, bool)> {
 		if idx >= self.slots.len() {
 			return None;
 		}
-		return Some(self.slots.swap_remove(idx));
+		return Some((self.slots.swap_remove(idx), true));
 	}
 
 	pub fn dirty(
