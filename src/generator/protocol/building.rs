@@ -53,7 +53,7 @@ impl Protocol for ProtocolBuilding {
 		tile_position_rel: &TilePositionRel,
 	) {
 		match &self.form {
-			ProtocolBuildingForm::Vegitation(maps) => {
+			ProtocolBuildingForm::Vegetation(maps) => {
 				for valid_map
 				in maps.maps.iter() {
 					pregen_tile_vegitation(
