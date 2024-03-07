@@ -10,4 +10,5 @@ pub enum ProtocolTerrainForm {
 	Flat(Vec<(u8, f32)>),
 	Noise(ProtocolNoise3d),
 	Surface(PTFSurface),
+	None,
 }
