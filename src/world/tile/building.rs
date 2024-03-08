@@ -1,6 +1,6 @@
 use crate::{TCHardness, Tile};
 
-#[derive(Clone, Copy, PartialEq, Default)]
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
 pub struct ArmsAimScale {
 	pub forward: u8,
 	pub backward: u8,
@@ -8,7 +8,7 @@ pub struct ArmsAimScale {
 	pub right: u8,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum BuildingType {
 	/// Cable under the floor (ex: power conduit).
 	Conduit,

@@ -9,7 +9,7 @@ pub enum Action {
 	Task(Task),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 /// Tasks are generated and queued for entities depending on
 pub enum Task {
 	Work(PhysicalOrder),
@@ -50,7 +50,7 @@ impl Task {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 /// Orders that entities do on their own for other orders, or the user can force these.
 pub enum IntermediateOrder {
 	Move(TilePositionAbs),
@@ -106,12 +106,12 @@ impl VirtualOrder {
 	]}
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 /// Orders that the entities can be given by the player manually.
 pub enum PhysicalOrder {
 	Mine(TilePositionAbs),
 	Pickup(TilePositionAbs),
-	// Construct(u32, BuildingType),
+	ConstructBuilding(TilePositionAbs, u32, BuildingType, bool),
 }
 
 impl PhysicalOrder {
@@ -121,7 +121,7 @@ impl PhysicalOrder {
 		match self {
 			PhysicalOrder::Mine(_) => "mine",
 			PhysicalOrder::Pickup(_) => "pickup",
-			// PhysicalOrder::Construct(_, _) => "construct",
+			PhysicalOrder::ConstructBuilding(_, _, _, _) => "construct",
 		}
 	}
 
@@ -145,6 +145,7 @@ impl PhysicalOrder {
 		match self {
 			PhysicalOrder::Mine(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
 			PhysicalOrder::Pickup(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
+			PhysicalOrder::ConstructBuilding(local_tile_position_abs, _, _, _) => { *local_tile_position_abs = tile_position_abs; },
 		}
 	}
 
@@ -154,9 +155,11 @@ impl PhysicalOrder {
 		match self {
 			PhysicalOrder::Mine(tile_position_abs) => *tile_position_abs,
 			PhysicalOrder::Pickup(tile_position_abs) => *tile_position_abs,
+			PhysicalOrder::ConstructBuilding(tile_position_abs, _, _, _) => *tile_position_abs,
 		}
 	}
 
+	/// Determines if this `PhysicalOrder` is allowed to be applied to this world tile.
 	pub fn validate_tile(
 		&self,
 		world_tile: &WorldTile,
@@ -168,6 +171,18 @@ impl PhysicalOrder {
 			PhysicalOrder::Pickup(_) => {
 				world_tile.item.contains_some()
 			},
+			PhysicalOrder::ConstructBuilding(_, _, building_type, force_solo) => {
+				for building in world_tile.building.slice() {
+					let Some(building) = building else {
+						continue;
+					};
+					if *building_type == building.tile.building_type &&
+						(*force_solo || building.tile.force_solo) {
+						return false;
+					}
+				}
+				true
+			}
 		}
 	}
 }

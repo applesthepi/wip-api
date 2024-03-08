@@ -2,7 +2,7 @@ use std::{str::FromStr, sync::Arc};
 
 use wip_primal::{ChunkPositionAbs, TilePositionAbs, TilePositionRel};
 
-use crate::{TileBuilding, ProtocolNoise2d, TCHardness, BuildingType, RTBuilding, Protocol, IntermediateChunk, RawPtr, ProtocolBuildingForm, NoiseProxy, prelude::op_11_01, Gen, VegetationConfig, ConfigNoise};
+use crate::{TileBuilding, ProtocolNoise2d, TCHardness, BuildingType, RTBuilding, Protocol, IntermediateChunk, RawPtr, ProtocolBuildingForm, NoiseProxy, prelude::op_11_01, Gen, VegetationConfig, ConfigNoise, RTItem};
 
 #[derive(Clone)]
 pub struct ProtocolBuilding {
@@ -31,6 +31,12 @@ impl ProtocolBuilding {
 			},
 			form,
 		}
+	}
+
+	pub fn instantiate(
+		&self,
+	) -> RTBuilding {
+		RTBuilding::new(self.tile.clone())
 	}
 }
 
