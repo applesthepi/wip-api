@@ -112,6 +112,7 @@ pub enum PhysicalOrder {
 	Mine(TilePositionAbs),
 	Pickup(TilePositionAbs),
 	ConstructBuilding(TilePositionAbs, u32, BuildingType, bool),
+	ConstructStructure(TilePositionAbs, u32),
 }
 
 impl PhysicalOrder {
@@ -122,6 +123,7 @@ impl PhysicalOrder {
 			PhysicalOrder::Mine(_) => "mine",
 			PhysicalOrder::Pickup(_) => "pickup",
 			PhysicalOrder::ConstructBuilding(_, _, _, _) => "construct",
+			PhysicalOrder::ConstructStructure(_, _) => "structure",
 		}
 	}
 
@@ -146,6 +148,7 @@ impl PhysicalOrder {
 			PhysicalOrder::Mine(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
 			PhysicalOrder::Pickup(local_tile_position_abs) => { *local_tile_position_abs = tile_position_abs; },
 			PhysicalOrder::ConstructBuilding(local_tile_position_abs, _, _, _) => { *local_tile_position_abs = tile_position_abs; },
+			PhysicalOrder::ConstructStructure(local_tile_position_abs, _) => { *local_tile_position_abs = tile_position_abs; },
 		}
 	}
 
@@ -156,6 +159,7 @@ impl PhysicalOrder {
 			PhysicalOrder::Mine(tile_position_abs) => *tile_position_abs,
 			PhysicalOrder::Pickup(tile_position_abs) => *tile_position_abs,
 			PhysicalOrder::ConstructBuilding(tile_position_abs, _, _, _) => *tile_position_abs,
+			PhysicalOrder::ConstructStructure(tile_position_abs, _) => *tile_position_abs,
 		}
 	}
 
@@ -182,7 +186,10 @@ impl PhysicalOrder {
 					}
 				}
 				true
-			}
+			},
+			PhysicalOrder::ConstructStructure(_, _) => {
+				!world_tile.structure.contains_some()
+			},
 		}
 	}
 }
