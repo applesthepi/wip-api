@@ -50,3 +50,12 @@ pub fn op_03_01<T: Float>(t: T) -> T { unsafe {
 	let scale = NumCast::from(3.0).unwrap_unchecked();
 	t / scale
 }}
+
+/// Size of a dynamic object in the world in tiles.
+#[derive(Clone, Copy, PartialEq, Default, Debug)]
+pub struct DOSize {
+	pub forward: u8,
+	pub backward: u8,
+	pub left: u8,
+	pub right: u8,
+}

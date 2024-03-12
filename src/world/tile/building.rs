@@ -1,12 +1,5 @@
 use crate::{TCHardness, Tile};
-
-#[derive(Clone, Copy, PartialEq, Default, Debug)]
-pub struct ArmsAimScale {
-	pub forward: u8,
-	pub backward: u8,
-	pub left: u8,
-	pub right: u8,
-}
+use crate::prelude::DOSize;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum BuildingType {
@@ -20,7 +13,7 @@ pub enum BuildingType {
 	Arms,
 	/// Aimed graphic for `Arms` (ex: auto turret aim).
 	/// Not for use in the physical world, just for world rendering purposes.
-	ArmsAim(ArmsAimScale),
+	ArmsAim(DOSize),
 	/// Wall mounted on the "edge" of a structure tile (ex: wall lamp).
 	Mounted,
 	/// Transparent buildings mounted to the roof (ex: fire sprinkler).

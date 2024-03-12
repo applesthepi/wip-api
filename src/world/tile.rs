@@ -1,4 +1,4 @@
-use bevy::prelude::{Entity, warn};
+use bevy::prelude::{Entity, error, warn};
 use wip_primal::CHUNK_WIDTH;
 
 use crate::{RTTerrain, RTRoof, RTStructure, RTItem, RTCover, RTBuilding, Task, PhysicalOrder, Registry};
@@ -125,12 +125,13 @@ impl<Rt: Clone, const LEN: usize> RTSlice<Rt, LEN> {
 	pub fn set_rt_quick(
 		&mut self,
 		rt: Rt,
-	) {
+	) -> bool {
 		for cell in self.slice.iter_mut() {
 			if cell.is_some() { continue; }
 			*cell = Some(rt);
-			return;
+			return true;
 		}
+		false
 	}
 
 	pub fn set_rt_lowest(
@@ -291,6 +292,35 @@ pub enum TileDamageState {
 }
 
 impl WorldTile {
+	pub fn add_item(
+		&mut self,
+		rt_item: RTItem,
+	) -> bool {
+		self.item.set_rt_quick(rt_item)
+	}
+
+	pub fn remove_item(
+		&mut self,
+	) -> Option<RTItem> {
+		self.item.slice_mut().first_mut().unwrap().take()
+	}
+
+	pub fn add_building(
+		&mut self,
+		rt_building: RTBuilding,
+	) {
+		if !self.building.set_rt_quick(rt_building) {
+			error!("To many buildings in one tile!");
+		}
+	}
+
+	pub fn set_structure(
+		&mut self,
+		rt_structure: RTStructure,
+	) {
+		*self.structure.slice_mut().first_mut().unwrap() = Some(rt_structure);
+	}
+
 	pub fn damage_structure(
 		&mut self,
 		quantity: u32,

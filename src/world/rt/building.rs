@@ -1,9 +1,10 @@
+use bevy::prelude::Entity;
 use crate::TileBuilding;
 
 #[derive(Clone, Copy)]
 pub struct RTBuilding {
 	pub tile: TileBuilding,
-	pub selected: bool,
+	pub dynamic_object: Option<Entity>,
 }
 
 impl RTBuilding {
@@ -12,7 +13,7 @@ impl RTBuilding {
 	) -> Self {
 		Self {
 			tile,
-			selected: false,
+			dynamic_object: None,
 		}
 	}
 }
