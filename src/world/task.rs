@@ -1,5 +1,5 @@
 use wip_primal::TilePositionAbs;
-use crate::{BuildingType, WorldTile};
+use crate::{BuildingType, RTPhysicalOrder, WorldTile};
 
 #[derive(Clone)]
 pub enum Action {
@@ -48,12 +48,63 @@ impl Task {
 			},
 		}
 	}
+
+	/// Only orders that DON'T NEED an action entity CAN be generated here if it passes validation.
+	/// Intermediate orders by definition can NOT have an action entity, and thus are only generated
+	/// here if it passes validation.
+	/// (construction needs action entity because it IS the action entity)
+	pub fn validate_all_new(
+		tile_position_abs: TilePositionAbs,
+		world_tile: &WorldTile,
+		rt_physical_orders: &Vec<RTPhysicalOrder>,
+	) -> Vec<Task> {
+		let mut tasks = Vec::new();
+		let mut po_mine = true;
+		let mut po_pickup = true;
+
+		for rt_physical_order in rt_physical_orders.iter() { match rt_physical_order.physical_order {
+			PhysicalOrder::Mine(_) => { po_mine = false; },
+			PhysicalOrder::Pickup(_) => { po_pickup = false; },
+			_ => {},
+		}}
+
+		// PHYSICAL
+
+		if po_mine {
+			let po_mine = PhysicalOrder::Mine(tile_position_abs);
+			if po_mine.validate_tile(world_tile) {
+				tasks.push(Task::Work(po_mine));
+			}
+		}
+
+		if po_pickup {
+			let po_pickup = PhysicalOrder::Pickup(tile_position_abs);
+			if po_pickup.validate_tile(world_tile) {
+				tasks.push(Task::Work(po_pickup));
+			}
+		}
+
+		// INTERMEDIATE
+
+		let io_move = IntermediateOrder::Move(tile_position_abs);
+		if io_move.validate_tile(world_tile) {
+			tasks.push(Task::Intermediate(io_move));
+		}
+
+		let io_man_machine = IntermediateOrder::ManMachine(tile_position_abs);
+		if io_man_machine.validate_tile(world_tile) {
+			tasks.push(Task::Intermediate(io_man_machine));
+		}
+
+		tasks
+	}
 }
 
 #[derive(Clone, Debug)]
 /// Orders that entities do on their own for other orders, or the user can force these.
 pub enum IntermediateOrder {
 	Move(TilePositionAbs),
+	ManMachine(TilePositionAbs),
 }
 
 impl IntermediateOrder {
@@ -62,6 +113,7 @@ impl IntermediateOrder {
 	) -> &'static str {
 		match self {
 			IntermediateOrder::Move(_) => "move",
+			IntermediateOrder::ManMachine(_) => "man machine",
 		}
 	}
 
@@ -70,6 +122,7 @@ impl IntermediateOrder {
 	) -> TilePositionAbs {
 		match self {
 			IntermediateOrder::Move(tile_position_abs) => *tile_position_abs,
+			IntermediateOrder::ManMachine(tile_position_abs) => *tile_position_abs,
 		}
 	}
 
@@ -80,6 +133,18 @@ impl IntermediateOrder {
 		match self {
 			IntermediateOrder::Move(_) => {
 				!world_tile.structure.contains_some()
+			},
+			IntermediateOrder::ManMachine(_) => {
+				for rt_building in world_tile.building.slice().iter() {
+					let Some(rt_building) = rt_building else {
+						continue;
+					};
+					if rt_building.tile.building_type != BuildingType::Arms {
+						continue;
+					}
+					return true;
+				}
+				false
 			},
 		}
 	}
