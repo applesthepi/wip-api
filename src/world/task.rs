@@ -91,7 +91,7 @@ impl Task {
 			tasks.push(Task::Intermediate(io_move));
 		}
 
-		let io_man_machine = IntermediateOrder::ManMachine(tile_position_abs);
+		let io_man_machine = IntermediateOrder::ManMachine(tile_position_abs, BuildingType::Arms);
 		if io_man_machine.validate_tile(world_tile) {
 			tasks.push(Task::Intermediate(io_man_machine));
 		}
@@ -104,7 +104,7 @@ impl Task {
 /// Orders that entities do on their own for other orders, or the user can force these.
 pub enum IntermediateOrder {
 	Move(TilePositionAbs),
-	ManMachine(TilePositionAbs),
+	ManMachine(TilePositionAbs, BuildingType),
 }
 
 impl IntermediateOrder {
@@ -113,7 +113,7 @@ impl IntermediateOrder {
 	) -> &'static str {
 		match self {
 			IntermediateOrder::Move(_) => "move",
-			IntermediateOrder::ManMachine(_) => "man machine",
+			IntermediateOrder::ManMachine(_, _) => "man machine",
 		}
 	}
 
@@ -122,7 +122,7 @@ impl IntermediateOrder {
 	) -> TilePositionAbs {
 		match self {
 			IntermediateOrder::Move(tile_position_abs) => *tile_position_abs,
-			IntermediateOrder::ManMachine(tile_position_abs) => *tile_position_abs,
+			IntermediateOrder::ManMachine(tile_position_abs, _) => *tile_position_abs,
 		}
 	}
 
@@ -134,12 +134,12 @@ impl IntermediateOrder {
 			IntermediateOrder::Move(_) => {
 				!world_tile.structure.contains_some()
 			},
-			IntermediateOrder::ManMachine(_) => {
+			IntermediateOrder::ManMachine(_, building_type) => {
 				for rt_building in world_tile.building.slice().iter() {
 					let Some(rt_building) = rt_building else {
 						continue;
 					};
-					if rt_building.tile.building_type != BuildingType::Arms {
+					if rt_building.tile.building_type != *building_type {
 						continue;
 					}
 					return true;

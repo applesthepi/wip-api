@@ -29,6 +29,45 @@ pub struct RTHumanBuild {
 	pub protocol_identifier: ProtocolIdentifier,
 }
 
+/// Material used in damage calculations (with depth in cm)
+#[derive(Clone)]
+pub enum EffectiveMaterial {
+	None,
+	Flesh(f32),
+	Wood(f32),
+	Composite(f32),
+	Concrete(f32),
+	Steel(f32),
+}
+
+impl EffectiveMaterial {
+	/// Remaining bullet penetration into this material.
+	pub fn simulate_perforation(
+		&self,
+		perforation_base: f32,
+		material_health: f32,
+	) -> (f32, f32) { match self {
+		Self::None => (perforation_base, 0.0),
+		Self::Flesh(depth) => Self::perforate(perforation_base, material_health, 20.0, *depth),
+		Self::Wood(depth) => Self::perforate(perforation_base, material_health, 5.0, *depth),
+		Self::Composite(depth) => Self::perforate(perforation_base, material_health, 2.0, *depth),
+		Self::Concrete(depth) => Self::perforate(perforation_base, material_health, 1.5, *depth),
+		Self::Steel(depth) => Self::perforate(perforation_base, material_health, 1.0, *depth),
+	}}
+
+	fn perforate(
+		perforation_base: f32,
+		material_health: f32,
+		material_softness: f32,
+		depth: f32,
+	) -> (f32, f32) {
+		let remaining_perforation = (perforation_base * material_softness) - depth;
+		let remaining_perforation_steel = remaining_perforation / material_softness;
+		let material_damage = ((remaining_perforation_steel + depth) / depth).min(1.0).powf(4.0);
+		(remaining_perforation_steel, material_damage)
+	}
+}
+
 #[derive(Clone)]
 pub enum HumanAttire {
 	Shoes,
@@ -253,5 +292,5 @@ pub struct EntityStats {
 #[derive(Clone)]
 pub enum ProtocolEntityForm {
 	Human(HumanBuild, EntityStats),
-	HumanAttire(HumanBuild, HumanAttire),
+	HumanAttire(HumanBuild, HumanAttire, EffectiveMaterial),
 }
