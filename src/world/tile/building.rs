@@ -26,7 +26,7 @@ impl AmmoType {
 	}
 }
 
-#[derive(Clone, Copy, PartialEq, Debug, Default)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct ArmsAimStats {
 	/// Furthest lock-on range of this weapon, will only fire if its a decent shot.
 	pub max_target_range: i32,
@@ -38,6 +38,16 @@ pub struct ArmsAimStats {
 	pub compatible_ammo: [Option<AmmoType>; 2],
 	/// (0, 1] - Effect of the speed of the bullet based on the weapon.
 	pub bullet_speed_factor: f32,
+}
+
+impl Default for ArmsAimStats {
+	fn default() -> Self { Self {
+		max_target_range: 10,
+		rpm: 350,
+		max_spread: 0.1,
+		compatible_ammo: [None, None],
+		bullet_speed_factor: 0.9,
+	}}
 }
 
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
