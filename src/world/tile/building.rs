@@ -5,7 +5,7 @@ use crate::prelude::DOSize;
 pub enum AmmoType {
 	#[default]
 	Cal50,
-	Cal50APIT,
+	Cal50API,
 }
 
 impl AmmoType {
@@ -19,11 +19,19 @@ impl AmmoType {
 		material_health: f32,
 		bullet_speed_factor: f32,
 	) -> (f32, f32) {
-		effective_material.simulate_perforation(bullet_speed_factor * match self {
-			Self::Cal50 => 1.8,
-			Self::Cal50APIT => 2.25,
-		}, material_health)
+		effective_material.simulate_perforation(
+			self.stopping_power(bullet_speed_factor),
+			material_health,
+		)
 	}
+
+	pub fn stopping_power(
+		&self,
+		bullet_speed_factor: f32,
+	) -> f32 { match self {
+		Self::Cal50 => 1.8 * bullet_speed_factor,
+		Self::Cal50API => 2.25 * bullet_speed_factor,
+	}}
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
