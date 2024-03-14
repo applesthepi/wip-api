@@ -29,8 +29,15 @@ impl AmmoType {
 		&self,
 		bullet_speed_factor: f32,
 	) -> f32 { match self {
-		Self::Cal50 => 1.8 * bullet_speed_factor,
-		Self::Cal50API => 2.25 * bullet_speed_factor,
+		Self::Cal50 => 1.8 * self.bullet_speed() * bullet_speed_factor,
+		Self::Cal50API => 2.25 * self.bullet_speed() * bullet_speed_factor,
+	}}
+
+	pub fn bullet_speed(
+		&self,
+	) -> f32 { match self {
+		Self::Cal50 => 50.0,
+		Self::Cal50API => 50.0,
 	}}
 }
 
@@ -72,6 +79,8 @@ pub enum BuildingType {
 	/// Aimed graphic for `Arms` (ex: auto turret aim).
 	/// Not for use in the physical world, just for world rendering purposes.
 	ArmsAim(DOSize, ArmsAimStats),
+	/// Bullets, missiles, etc.
+	Projectile(DOSize),
 	/// Wall mounted on the "edge" of a structure tile (ex: wall lamp).
 	Mounted,
 	/// Transparent buildings mounted to the roof (ex: fire sprinkler).

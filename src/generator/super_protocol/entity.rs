@@ -1,4 +1,5 @@
 use std::slice::Iter;
+use bevy::prelude::{Rect, Vec2};
 use crate::{EquippedICState, ICState, ModIdentifier, ProtocolGroup, ProtocolIdentifier, RTItem, TileItem};
 
 #[derive(Clone, Default, PartialEq)]
@@ -21,6 +22,15 @@ impl HumanBuild {
 			HumanBuild::Bulk => "b",
 		}
 	}
+
+	pub fn get_hitbox(
+		&self,
+	) -> Rect { match self {
+		_ => Rect::from_corners(
+			Vec2::new(0.21875, 0.15625),
+			Vec2::new(0.78125, 1.34375),
+		)
+	}}
 }
 
 #[derive(Clone, Default)]
@@ -156,6 +166,12 @@ impl RTEntityType {
 		&mut self,
 	) { match self {
 		RTEntityType::Human(rt_entity_human) => rt_entity_human.clear_attire(),
+	}}
+
+	pub fn get_hitbox(
+		&self,
+	) -> Rect { match self {
+		Self::Human(rt_entity_human) => rt_entity_human.build.human_build.get_hitbox(),
 	}}
 }
 
