@@ -1,6 +1,12 @@
 use crate::{EffectiveMaterial, TCHardness, Tile};
 use crate::prelude::DOSize;
 
+#[derive(Default, Clone, Copy)]
+pub struct ProjectileLive {
+	pub ammo_type: AmmoType,
+	pub bullet_speed_factor: f32,
+}
+
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum AmmoType {
 	#[default]
@@ -18,27 +24,51 @@ impl AmmoType {
 		effective_material: &EffectiveMaterial,
 		material_health: f32,
 		bullet_speed_factor: f32,
+		remaining_perforation: Option<f32>,
 	) -> (f32, f32) {
-		effective_material.simulate_perforation(
-			self.stopping_power(bullet_speed_factor),
-			material_health,
-		)
+		if let Some(remaining_perforation) = remaining_perforation {
+			effective_material.simulate_perforation(
+				self.stopping_power(bullet_speed_factor).min(remaining_perforation),
+				material_health,
+			)
+		} else {
+			effective_material.simulate_perforation(
+				self.stopping_power(bullet_speed_factor),
+				material_health,
+			)
+		}
 	}
-
-	pub fn stopping_power(
-		&self,
-		bullet_speed_factor: f32,
-	) -> f32 { match self {
-		Self::Cal50 => 1.8 * self.bullet_speed() * bullet_speed_factor,
-		Self::Cal50API => 2.25 * self.bullet_speed() * bullet_speed_factor,
-	}}
 
 	pub fn bullet_speed(
 		&self,
+		bullet_speed_factor: f32,
 	) -> f32 { match self {
-		Self::Cal50 => 50.0,
-		Self::Cal50API => 50.0,
+		Self::Cal50 => 50.0 * bullet_speed_factor,
+		Self::Cal50API => 50.0 * bullet_speed_factor,
 	}}
+
+	/// How much effective material resistance this bullet can take before stopping.
+	pub fn stopping_power(
+		&self,
+		bullet_speed_factor: f32,
+	) -> f32 {
+		self.bullet_speed(bullet_speed_factor) * self.impact_force()
+	}
+
+	pub fn impact_force(
+		&self,
+	) -> f32 { match self {
+		Self::Cal50 => 1.8,
+		Self::Cal50API => 2.25,
+	}}
+
+	/// IDR - Damage potential for a material.
+	pub fn impact_damage_ratio(
+		&self,
+		bullet_speed_factor: f32,
+	) -> f32 {
+		self.bullet_speed(bullet_speed_factor) / self.impact_force()
+	}
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]

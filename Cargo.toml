@@ -31,3 +31,4 @@ bevy.workspace = true
 libloading.workspace = true
 weighted_rand.workspace = true
 rand.workspace = true
+smallvec.workspace = true

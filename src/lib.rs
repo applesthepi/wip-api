@@ -2,6 +2,7 @@
 #![feature(slice_from_ptr_range)]
 #![feature(extend_one)]
 #![feature(const_trait_impl)]
+#![feature(exclusive_range_pattern)]
 
 pub mod prelude;
 
