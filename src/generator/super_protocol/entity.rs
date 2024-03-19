@@ -1,3 +1,5 @@
+use std::cmp::{min, min_by, Ordering};
+use std::ops::{Add, AddAssign, Mul};
 use std::slice::Iter;
 use bevy::prelude::{error, Rect, Vec2};
 use smallvec::SmallVec;
@@ -158,7 +160,7 @@ pub enum DefectOrganType {
 	Heart,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
 pub enum DefectBodyPartType {
 	Head,
 	Eyes,
@@ -224,6 +226,19 @@ impl DefectBodyPartType {
 		Self::Feet => 10.0,
 	}}
 
+	pub fn as_str(
+		&self,
+	) -> &'static str { match self {
+		Self::Head => "head",
+		Self::Eyes => "eye",
+		Self::Ears => "ear",
+		Self::Arms => "arm",
+		Self::Hands => "hand",
+		Self::Torso => "torso",
+		Self::Legs => "legs",
+		Self::Feet => "foot",
+	}}
+
 	pub fn postrequisite(
 		&self,
 	) -> Option<Self> { match self {
@@ -271,6 +286,12 @@ impl HumanDefects {
 			effects.extend(body_part.effects().into_iter());
 		}
 		effects
+	}
+
+	pub fn defects(
+		&self,
+	) -> Iter<DefectBodyPart> {
+		self.body_parts.iter()
 	}
 
 	pub fn damage(
@@ -365,6 +386,14 @@ pub enum EntityDefectType {
 }
 
 impl EntityDefectType {
+	pub fn as_str(
+		&self,
+	) -> &'static str { match self {
+		Self::Scar => "scar",
+		Self::Bruise => "bruise",
+		Self::Perforation => "perforation",
+	}}
+
 	pub fn effects(
 		&self,
 		defect_strength: f32,
@@ -397,6 +426,74 @@ pub struct EntityEffect {
 }
 
 #[derive(Clone)]
+pub struct EntityEffects {
+	pub conciseness: f32,
+	pub pain_receptors: f32,
+	pub movement_speed: f32,
+}
+
+impl Default for EntityEffects {
+	fn default() -> Self { Self {
+		conciseness: 1.0,
+		pain_receptors: 1.0,
+		movement_speed: 1.0,
+	}}
+}
+
+impl EntityEffects {
+	pub fn apply_effect(
+		&mut self,
+		entity_effect: EntityEffect,
+	) {
+		let v = match entity_effect.entity_effect_type {
+			EntityEffectType::Conciseness => &mut self.conciseness,
+			EntityEffectType::PainReceptors => &mut self.pain_receptors,
+			EntityEffectType::MovementSpeed => &mut self.movement_speed,
+		};
+		entity_effect.effect_val.modify_value(v);
+	}
+
+	pub fn get_effect(
+		&self,
+		entity_effect_type: EntityEffectType,
+	) -> f32 { match entity_effect_type {
+		EntityEffectType::Conciseness => self.conciseness,
+		EntityEffectType::PainReceptors => self.pain_receptors,
+		EntityEffectType::MovementSpeed => self.movement_speed,
+	}}
+}
+
+#[derive(Clone)]
+pub enum PainScale {
+	None,
+	Mild,
+	Moderate,
+	Extreme,
+}
+
+impl PainScale {
+	pub fn from_pain_receptors(
+		v: f32,
+	) -> Self {
+		debug_assert!(v >= 0.0);// TODO: assert when bounds testing feature flag is on, not debug.
+		debug_assert!(v <= 1.0);
+		if v >= 0.95 { return Self::None; }
+		if v >= 0.80 { return Self::Mild; }
+		if v >= 0.50 { return Self::Moderate; }
+		Self::Extreme
+	}
+
+	pub fn as_str(
+		&self,
+	) -> &'static str { match self {
+		Self::None => "none",
+		Self::Mild => "mild",
+		Self::Moderate => "moderate",
+		Self::Extreme => "extreme",
+	}}
+}
+
+#[derive(Clone, Copy)]
 pub enum EntityEffectType {
 	/// Depends: NONE
 	Conciseness,
@@ -406,8 +503,25 @@ pub enum EntityEffectType {
 	MovementSpeed,
 }
 
+impl EntityEffectType {
+	pub fn as_str(
+		&self,
+	) -> &'static str { match self {
+		Self::Conciseness => "conciseness",
+		Self::PainReceptors => "pain",
+		Self::MovementSpeed => "movement",
+	}}
+
+	pub fn all(
+	) -> Vec<Self> { vec![
+		Self::Conciseness,
+		Self::PainReceptors,
+		Self::MovementSpeed,
+	]}
+}
+
 #[derive(Clone)]
-pub enum EffectVal<T: Sized> {
+pub enum EffectVal<T: Sized + PartialOrd + Copy + Add + AddAssign + Mul<Output = T>> {
 	MaxPercentage(T),
 	PercentagePointChange(T),
 	/// Scaled effect on value by T.
@@ -415,6 +529,23 @@ pub enum EffectVal<T: Sized> {
 	/// T > 0: positive multiplicative change.
 	/// T < 0: negative multiplicative change.
 	PercentageChange(T),
+}
+
+impl<T: Sized + PartialOrd + Copy + Add + AddAssign + Mul<Output = T>> EffectVal<T> {
+	pub fn modify_value(
+		&self,
+		v: &mut T,
+	) { match self {
+		Self::MaxPercentage(effect_val) => {
+			*v = min_by(*v, *effect_val, |a, b| { a.partial_cmp(b).unwrap_or(Ordering::Equal) });
+		},
+		Self::PercentagePointChange(effect_val) => {
+			*v += *effect_val;
+		},
+		Self::PercentageChange(effect_val) => {
+			*v += *v * *effect_val;
+		},
+	}}
 }
 
 /// Material used in damage calculations (with depth in cm)
@@ -640,6 +771,22 @@ impl RTEntityType {
 	) -> Rect { match self {
 		Self::Human(rt_entity_human) => rt_entity_human.build.human_build.get_hitbox(),
 	}}
+
+	pub fn defects(
+		&self,
+	) -> Iter<DefectBodyPart> { match self {
+		Self::Human(rt_entity_human) => rt_entity_human.defects.defects(),
+	}}
+
+	pub fn effects(
+		&self,
+	) -> Vec<EntityEffect> {
+		let mut effects = Vec::new();
+		for defect in self.defects() {
+			effects.extend(defect.effects().into_iter());
+		}
+		effects
+	}
 }
 
 #[derive(Clone)]
@@ -761,8 +908,44 @@ impl Inventory {
 pub struct RTEntity {
 	pub faction: u32,
 	pub rt_type: RTEntityType,
+	pub effects: EntityEffects,
 	pub stats: EntityStats,
 	pub inventory: Inventory,
+}
+
+impl RTEntity {
+	pub fn damage(
+		&mut self,
+		damage_form: DamageForm,
+	) -> Option<DamageRemainder> {
+		let damage_remainder = match &mut self.rt_type {
+			RTEntityType::Human(rt_entity_human) => rt_entity_human.defects.damage(
+				damage_form,
+				&mut rt_entity_human.attire,
+			)
+		};
+		let mut entity_effects = EntityEffects::default();
+		for entity_effect in self.rt_type.effects().into_iter() {
+			let EffectVal::PercentagePointChange(_) = entity_effect.effect_val else {
+				continue;
+			};
+			entity_effects.apply_effect(entity_effect);
+		}
+		for entity_effect in self.rt_type.effects().into_iter() {
+			let EffectVal::PercentageChange(_) = entity_effect.effect_val else {
+				continue;
+			};
+			entity_effects.apply_effect(entity_effect);
+		}
+		for entity_effect in self.rt_type.effects().into_iter() {
+			let EffectVal::MaxPercentage(_) = entity_effect.effect_val else {
+				continue;
+			};
+			entity_effects.apply_effect(entity_effect);
+		}
+		self.effects = entity_effects;
+		damage_remainder
+	}
 }
 
 #[derive(Clone)]
