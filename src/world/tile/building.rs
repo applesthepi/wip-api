@@ -16,9 +16,10 @@ pub enum AmmoType {
 
 impl AmmoType {
 	/// Perforation of steel in centimeters is used as the base value, other materials
-	/// are derived from this. Returns the remaining perforation distance available for
+	/// are derived from this. Returns the remaining penetration distance available for
 	/// this bullet. A negative value means the bullet was consumed. The second value
-	/// is between [0, 1] determining the damage percent of this simulation.
+	/// is between [0, 1] determining the damage percent for the effective material of
+	/// this simulation.
 	pub fn simulate_perforation(
 		&self,
 		effective_material: &EffectiveMaterial,
@@ -28,47 +29,54 @@ impl AmmoType {
 	) -> (f32, f32) {
 		if let Some(remaining_perforation) = remaining_perforation {
 			effective_material.simulate_perforation(
-				self.stopping_power(bullet_speed_factor).min(remaining_perforation),
+				self.bullet_penetration(bullet_speed_factor).min(remaining_perforation),
 				material_health,
 			)
 		} else {
 			effective_material.simulate_perforation(
-				self.stopping_power(bullet_speed_factor),
+				self.bullet_penetration(bullet_speed_factor),
 				material_health,
 			)
 		}
 	}
 
-	pub fn bullet_speed(
-		&self,
-		bullet_speed_factor: f32,
-	) -> f32 { match self {
-		Self::Cal50 => 50.0 * bullet_speed_factor,
-		Self::Cal50API => 50.0 * bullet_speed_factor,
-	}}
-
-	/// How much effective material resistance this bullet can take before stopping.
-	pub fn stopping_power(
+	/// IDR - Impact Damage Ratio - **Direct damage** potential for a material.
+	pub fn impact_damage_ratio(
 		&self,
 		bullet_speed_factor: f32,
 	) -> f32 {
-		self.bullet_speed(bullet_speed_factor) * self.impact_force()
+		self.bullet_velocity(bullet_speed_factor) / self.base_penetration()
 	}
 
-	pub fn impact_force(
+	pub fn bullet_penetration(
+		&self,
+		bullet_speed_factor: f32,
+	) -> f32 {
+		self.base_penetration() * bullet_speed_factor.powi(4)
+	}
+
+	pub fn bullet_velocity(
+		&self,
+		bullet_speed_factor: f32,
+	) -> f32 {
+		self.base_velocity() * bullet_speed_factor
+	}
+
+	/// Penetration cm of steel. Be aware that this value has assumed velocity and weight.
+	pub fn base_penetration(
 		&self,
 	) -> f32 { match self {
 		Self::Cal50 => 1.8,
 		Self::Cal50API => 2.25,
 	}}
 
-	/// IDR - Damage potential for a material.
-	pub fn impact_damage_ratio(
+	/// Realistic velocity in meters per second. Visual speed (much slower) based on this.
+	pub fn base_velocity(
 		&self,
-		bullet_speed_factor: f32,
-	) -> f32 {
-		self.bullet_speed(bullet_speed_factor) / self.impact_force()
-	}
+	) -> f32 { match self {
+		Self::Cal50 => 850.0,
+		Self::Cal50API => 850.0,
+	}}
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -91,7 +99,7 @@ impl Default for ArmsAimStats {
 		rpm: 350,
 		max_spread: 0.1,
 		compatible_ammo: [None, None],
-		bullet_speed_factor: 0.9,
+		bullet_speed_factor: 0.95,
 	}}
 }
 
