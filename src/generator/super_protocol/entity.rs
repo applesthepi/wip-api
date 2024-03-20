@@ -72,7 +72,7 @@ impl DamageForm {
 			);
 			let damage_percent = damage_percent.min(1.0);
 			let mut idr = projectile_live.ammo_type.impact_damage_ratio(projectile_live.bullet_speed_factor);
-			idr *= 0.01;
+			idr *= 0.001;
 			let mut damage_remainder = None;
 			if remaining_perforation_distance > 0.0 {
 				damage_remainder = Some(DamageRemainder::Bullet(remaining_perforation_distance));
@@ -81,6 +81,7 @@ impl DamageForm {
 				Some(EntityDefect {
 					entity_defect_type: EntityDefectType::Perforation,
 					defect_strength: damage_percent,
+					effect_strength: idr,
 					direct_damage: EffectVal::PercentagePointChange(
 						-damage_percent * idr
 					),
@@ -90,6 +91,7 @@ impl DamageForm {
 				Some(EntityDefect {
 					entity_defect_type: EntityDefectType::Bruise,
 					defect_strength: damage_percent * 5.0,
+					effect_strength: 1.0,
 					direct_damage: EffectVal::PercentageChange(damage_percent * -0.05),
 				}),
 				damage_remainder,
@@ -239,6 +241,19 @@ impl DefectBodyPartType {
 		Self::Feet => "foot",
 	}}
 
+	pub fn major(
+		&self,
+	) -> Self { match self {
+		Self::Head => Self::Head,
+		Self::Eyes => Self::Head,
+		Self::Ears => Self::Head,
+		Self::Arms => Self::Arms,
+		Self::Hands => Self::Arms,
+		Self::Torso => Self::Torso,
+		Self::Legs => Self::Legs,
+		Self::Feet => Self::Legs,
+	}}
+
 	pub fn postrequisite(
 		&self,
 	) -> Option<Self> { match self {
@@ -366,6 +381,8 @@ pub struct EntityDefect {
 	pub entity_defect_type: EntityDefectType,
 	/// [0, 1] - Strength of the specific defect type.
 	pub defect_strength: f32,
+	/// [0, 1] - Strength of the effects generated from this defect.
+	pub effect_strength: f32,
 	/// How much to damage the body part directly.
 	pub direct_damage: EffectVal<f32>,
 }
@@ -374,7 +391,10 @@ impl EntityDefect {
 	pub fn effects(
 		&self,
 	) -> Vec<EntityEffect> {
-		self.entity_defect_type.effects(self.defect_strength)
+		self.entity_defect_type.effects(
+			self.defect_strength,
+			self.effect_strength,
+		)
 	}
 }
 
@@ -397,23 +417,28 @@ impl EntityDefectType {
 	pub fn effects(
 		&self,
 		defect_strength: f32,
+		effect_strength: f32,
 	) -> Vec<EntityEffect> { match self {
 		Self::Scar => vec![
 			EntityEffect {
 				entity_effect_type: EntityEffectType::PainReceptors,
-				effect_val: EffectVal::PercentagePointChange(-0.01 * defect_strength),
+				effect_val: EffectVal::PercentagePointChange(-0.01 * defect_strength * effect_strength),
 			},
 		],
 		Self::Bruise => vec![
 			EntityEffect {
 				entity_effect_type: EntityEffectType::PainReceptors,
-				effect_val: EffectVal::PercentagePointChange(-0.1 * defect_strength),
+				effect_val: EffectVal::PercentagePointChange(-0.1 * defect_strength * effect_strength),
 			},
 		],
 		Self::Perforation => vec![
 			EntityEffect {
 				entity_effect_type: EntityEffectType::PainReceptors,
-				effect_val: EffectVal::PercentageChange(-0.5 * defect_strength),
+				effect_val: EffectVal::PercentageChange(-0.5 * defect_strength * effect_strength),
+			},
+			EntityEffect {
+				entity_effect_type: EntityEffectType::BloodPressure,
+				effect_val: EffectVal::PercentageChange(-0.8 * defect_strength * effect_strength),
 			},
 		],
 	}}
@@ -427,16 +452,22 @@ pub struct EntityEffect {
 
 #[derive(Clone)]
 pub struct EntityEffects {
+	pub blood_pressure: f32,
 	pub conciseness: f32,
 	pub pain_receptors: f32,
 	pub movement_speed: f32,
+
+	incapacitated: bool,
 }
 
 impl Default for EntityEffects {
 	fn default() -> Self { Self {
+		blood_pressure: 1.0,
 		conciseness: 1.0,
 		pain_receptors: 1.0,
 		movement_speed: 1.0,
+
+		incapacitated: false,
 	}}
 }
 
@@ -446,6 +477,7 @@ impl EntityEffects {
 		entity_effect: EntityEffect,
 	) {
 		let v = match entity_effect.entity_effect_type {
+			EntityEffectType::BloodPressure => &mut self.blood_pressure,
 			EntityEffectType::Conciseness => &mut self.conciseness,
 			EntityEffectType::PainReceptors => &mut self.pain_receptors,
 			EntityEffectType::MovementSpeed => &mut self.movement_speed,
@@ -457,10 +489,35 @@ impl EntityEffects {
 		&self,
 		entity_effect_type: EntityEffectType,
 	) -> f32 { match entity_effect_type {
+		EntityEffectType::BloodPressure => self.blood_pressure,
 		EntityEffectType::Conciseness => self.conciseness,
 		EntityEffectType::PainReceptors => self.pain_receptors,
 		EntityEffectType::MovementSpeed => self.movement_speed,
 	}}
+
+	pub fn process_downstream(
+		&mut self,
+	) {
+		for entity_effect_type in EntityEffectType::all().into_iter() {
+			let stream_effects = entity_effect_type.stream_effect(self.get_effect(entity_effect_type));
+			for (
+				entity_effect_type,
+				effect_val,
+			) in stream_effects {
+				self.apply_effect(EntityEffect {
+					entity_effect_type,
+					effect_val,
+				});
+			}
+		}
+		self.incapacitated = self.conciseness < 0.2;
+	}
+
+	pub fn incapacitated(
+		&self,
+	) -> bool {
+		self.incapacitated
+	}
 }
 
 #[derive(Clone)]
@@ -495,11 +552,13 @@ impl PainScale {
 
 #[derive(Clone, Copy)]
 pub enum EntityEffectType {
-	/// Depends: NONE
+	/// Effects: Conciseness
+	BloodPressure,
+	/// Effects: MovementSpeed
 	Conciseness,
-	/// Depends: NONE
+	/// Effects: MovementSpeed
 	PainReceptors,
-	/// Depends: conciseness and pain receptors
+	/// Effects: NONE
 	MovementSpeed,
 }
 
@@ -507,6 +566,7 @@ impl EntityEffectType {
 	pub fn as_str(
 		&self,
 	) -> &'static str { match self {
+		Self::BloodPressure => "blood loss",
 		Self::Conciseness => "conciseness",
 		Self::PainReceptors => "pain",
 		Self::MovementSpeed => "movement",
@@ -514,13 +574,24 @@ impl EntityEffectType {
 
 	pub fn all(
 	) -> Vec<Self> { vec![
+		Self::BloodPressure,
 		Self::Conciseness,
 		Self::PainReceptors,
 		Self::MovementSpeed,
 	]}
+
+	pub fn stream_effect(
+		&self,
+		value: f32,
+	) -> Vec<(Self, EffectVal<f32>)> { match self {
+		Self::BloodPressure => vec![(Self::Conciseness, EffectVal::MaxPercentage(value))],
+		Self::Conciseness => vec![(Self::MovementSpeed, EffectVal::MaxPercentage(value * 2.0))],
+		Self::PainReceptors => vec![(Self::MovementSpeed, EffectVal::MaxPercentage(value * 2.0))],
+		Self::MovementSpeed => vec![],
+	}}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum EffectVal<T: Sized + PartialOrd + Copy + Add + AddAssign + Mul<Output = T>> {
 	MaxPercentage(T),
 	PercentagePointChange(T),
@@ -780,13 +851,9 @@ impl RTEntityType {
 
 	pub fn effects(
 		&self,
-	) -> Vec<EntityEffect> {
-		let mut effects = Vec::new();
-		for defect in self.defects() {
-			effects.extend(defect.effects().into_iter());
-		}
-		effects
-	}
+	) -> Vec<EntityEffect> { match self {
+		Self::Human(rt_entity_human) => rt_entity_human.defects.effects(),
+	}}
 }
 
 #[derive(Clone)]
@@ -943,6 +1010,7 @@ impl RTEntity {
 			};
 			entity_effects.apply_effect(entity_effect);
 		}
+		entity_effects.process_downstream();
 		self.effects = entity_effects;
 		damage_remainder
 	}
