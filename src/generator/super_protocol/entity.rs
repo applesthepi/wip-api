@@ -78,22 +78,22 @@ impl DamageForm {
 				damage_remainder = Some(DamageRemainder::Bullet(remaining_perforation_distance));
 			}
 			if damage_percent > 0.1 {(
-				Some(EntityDefect {
-					entity_defect_type: EntityDefectType::Perforation,
-					defect_strength: damage_percent,
-					effect_strength: idr,
-					direct_damage: EffectVal::PercentagePointChange(
+				Some(EntityDefect::new(
+					EntityDefectType::Perforation,
+					damage_percent,
+					idr,
+					EffectVal::PercentagePointChange(
 						-damage_percent * idr
 					),
-				}),
+				)),
 				damage_remainder,
 			)} else if damage_percent > 0.03 {(
-				Some(EntityDefect {
-					entity_defect_type: EntityDefectType::Bruise,
-					defect_strength: damage_percent * 5.0,
-					effect_strength: 1.0,
-					direct_damage: EffectVal::PercentageChange(damage_percent * -0.05),
-				}),
+				Some(EntityDefect::new(
+					EntityDefectType::Bruise,
+					damage_percent * 5.0,
+					1.0,
+					EffectVal::PercentageChange(damage_percent * -0.05),
+				)),
 				damage_remainder,
 			)} else {(
 				None,
@@ -273,7 +273,7 @@ impl DefectBodyPartType {
 #[derive(Clone)]
 pub struct HumanDefects {
 	body_parts: [DefectBodyPart; 8],
-	dirty: bool,
+	pub dirty: bool,
 }
 
 impl Default for HumanDefects {
@@ -374,6 +374,19 @@ impl HumanDefects {
 		}
 		damage_remainder
 	}
+
+	pub fn heal(
+		&mut self,
+		delta_seconds: f32,
+	) {
+		for body_part in self.body_parts.iter_mut() {
+			body_part.defects.drain_filter(|defect| {
+				defect.defect_strength -= delta_seconds * 0.05;
+				defect.defect_strength <= 0.0
+			});
+			body_part.recalculate_health();// TODO: dirty health?
+		}
+	}
 }
 
 #[derive(Clone)]
@@ -381,6 +394,7 @@ pub struct EntityDefect {
 	pub entity_defect_type: EntityDefectType,
 	/// [0, 1] - Strength of the specific defect type.
 	pub defect_strength: f32,
+	pub init_defect_strength: f32,
 	/// [0, 1] - Strength of the effects generated from this defect.
 	pub effect_strength: f32,
 	/// How much to damage the body part directly.
@@ -388,6 +402,19 @@ pub struct EntityDefect {
 }
 
 impl EntityDefect {
+	pub fn new(
+		entity_defect_type: EntityDefectType,
+		defect_strength: f32,
+		effect_strength: f32,
+		direct_damage: EffectVal<f32>,
+	) -> Self { Self {
+		entity_defect_type,
+		defect_strength,
+		init_defect_strength: defect_strength,
+		effect_strength,
+		direct_damage,
+	}}
+
 	pub fn effects(
 		&self,
 	) -> Vec<EntityEffect> {
@@ -458,6 +485,8 @@ pub struct EntityEffects {
 	pub movement_speed: f32,
 
 	incapacitated: bool,
+
+	pub dirty: bool,
 }
 
 impl Default for EntityEffects {
@@ -468,6 +497,8 @@ impl Default for EntityEffects {
 		movement_speed: 1.0,
 
 		incapacitated: false,
+
+		dirty: false,
 	}}
 }
 
@@ -483,6 +514,7 @@ impl EntityEffects {
 			EntityEffectType::MovementSpeed => &mut self.movement_speed,
 		};
 		entity_effect.effect_val.modify_value(v);
+		self.dirty = true;
 	}
 
 	pub fn get_effect(
@@ -844,7 +876,7 @@ impl RTEntityType {
 	}}
 
 	pub fn defects(
-		&self,
+		&mut self,
 	) -> Iter<DefectBodyPart> { match self {
 		Self::Human(rt_entity_human) => rt_entity_human.defects.defects(),
 	}}
@@ -853,6 +885,26 @@ impl RTEntityType {
 		&self,
 	) -> Vec<EntityEffect> { match self {
 		Self::Human(rt_entity_human) => rt_entity_human.defects.effects(),
+	}}
+
+	pub fn heal(
+		&mut self,
+		delta_seconds: f32,
+	) { match self {
+		Self::Human(rt_entity_human) => {
+			rt_entity_human.defects.dirty = true;
+			rt_entity_human.defects.heal(delta_seconds)
+		},
+	}}
+
+	pub fn poll_defects_dirty(
+		&mut self,
+	) -> bool { match self {
+		Self::Human(rt_entity_human) => {
+			let dirty = rt_entity_human.defects.dirty;
+			rt_entity_human.defects.dirty = false;
+			dirty
+		},
 	}}
 }
 
@@ -991,6 +1043,21 @@ impl RTEntity {
 				&mut rt_entity_human.attire,
 			)
 		};
+		self.recalculate_effects();
+		damage_remainder
+	}
+
+	pub fn heal(
+		&mut self,
+		delta_seconds: f32,
+	) {
+		self.rt_type.heal(delta_seconds);
+		self.recalculate_effects();
+	}
+
+	pub fn recalculate_effects(
+		&mut self,
+	) {
 		let mut entity_effects = EntityEffects::default();
 		for entity_effect in self.rt_type.effects().into_iter() {
 			let EffectVal::PercentagePointChange(_) = entity_effect.effect_val else {
@@ -1012,7 +1079,15 @@ impl RTEntity {
 		}
 		entity_effects.process_downstream();
 		self.effects = entity_effects;
-		damage_remainder
+		self.effects.dirty = true;
+	}
+
+	pub fn poll_defects_effects_dirty(
+		&mut self,
+	) -> bool {
+		let dirty = self.effects.dirty || self.rt_type.poll_defects_dirty();
+		self.effects.dirty = false;
+		dirty
 	}
 }
 
