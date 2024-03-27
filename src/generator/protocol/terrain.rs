@@ -92,7 +92,7 @@ fn pregen_chunk_flat(
 	height: u8,
 	est: f32,
 ) {
-	intermediate_chunk.get_mut().subsurface.flat.add_form(
+	intermediate_chunk.subsurface.flat.add_form(
 		SubsurfaceConfig {
 			height,
 		},
@@ -119,7 +119,7 @@ fn pregen_tile_noise(
 	if height >= 3 { return; }
 	// TODO: modifiers (ClimateSunlight etc.)
 	let est = op_11_01(valid_sample);
-	intermediate_chunk.get_mut().subsurface.noise.add_form(
+	intermediate_chunk.subsurface.noise.add_form(
 		SubsurfaceConfig {
 			height,
 		},

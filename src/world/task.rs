@@ -62,6 +62,7 @@ impl Task {
 		let mut po_mine = true;
 		let mut po_pickup = true;
 
+
 		for rt_physical_order in rt_physical_orders.iter() { match rt_physical_order.physical_order {
 			PhysicalOrder::Mine(_) => { po_mine = false; },
 			PhysicalOrder::Pickup(_) => { po_pickup = false; },

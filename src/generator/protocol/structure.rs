@@ -89,7 +89,7 @@ fn pregen_tile_structure(
 
 	let est = op_11_01(valid_sample);
 	if est < 0.5 { return; }
-	intermediate_chunk.get_mut().mountain.noise.add_form(
+	intermediate_chunk.mountain.noise.add_form(
 		MountainConfig {
 		},
 		ConfigNoise {

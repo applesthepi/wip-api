@@ -3,6 +3,7 @@
 #![feature(extend_one)]
 #![feature(const_trait_impl)]
 #![feature(exclusive_range_pattern)]
+#![feature(float_minimum_maximum)]
 
 pub mod prelude;
 

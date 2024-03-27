@@ -254,6 +254,16 @@ impl DefectBodyPartType {
 		Self::Feet => Self::Legs,
 	}}
 
+	pub fn minors(
+		&self,
+	) -> Vec<Self> { match self {
+		Self::Head => vec![Self::Head, Self::Eyes, Self::Ears],
+		Self::Arms => vec![Self::Arms, Self::Hands],
+		Self::Torso => vec![Self::Torso],
+		Self::Legs => vec![Self::Legs, Self::Feet],
+		_ => unimplemented!(),
+	}}
+
 	pub fn postrequisite(
 		&self,
 	) -> Option<Self> { match self {
@@ -425,7 +435,7 @@ impl EntityDefect {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum EntityDefectType {
 	Scar,
 	Bruise,
@@ -484,7 +494,10 @@ pub struct EntityEffects {
 	pub pain_receptors: f32,
 	pub movement_speed: f32,
 
+	pub blood_volume: f32,
+
 	incapacitated: bool,
+	dead: bool,
 
 	pub dirty: bool,
 }
@@ -496,7 +509,10 @@ impl Default for EntityEffects {
 		pain_receptors: 1.0,
 		movement_speed: 1.0,
 
+		blood_volume: 1.0,
+
 		incapacitated: false,
+		dead: false,
 
 		dirty: false,
 	}}
@@ -509,6 +525,7 @@ impl EntityEffects {
 	) {
 		let v = match entity_effect.entity_effect_type {
 			EntityEffectType::BloodPressure => &mut self.blood_pressure,
+			EntityEffectType::BloodVolume => &mut self.blood_pressure, // Can't modify blood volume directly.
 			EntityEffectType::Conciseness => &mut self.conciseness,
 			EntityEffectType::PainReceptors => &mut self.pain_receptors,
 			EntityEffectType::MovementSpeed => &mut self.movement_speed,
@@ -522,6 +539,7 @@ impl EntityEffects {
 		entity_effect_type: EntityEffectType,
 	) -> f32 { match entity_effect_type {
 		EntityEffectType::BloodPressure => self.blood_pressure,
+		EntityEffectType::BloodVolume => self.blood_volume,
 		EntityEffectType::Conciseness => self.conciseness,
 		EntityEffectType::PainReceptors => self.pain_receptors,
 		EntityEffectType::MovementSpeed => self.movement_speed,
@@ -529,9 +547,27 @@ impl EntityEffects {
 
 	pub fn process_downstream(
 		&mut self,
+		delta_seconds: f32,
 	) {
+		// https://www.desmos.com/calculator/spshmwlxp0
+		let x = self.blood_pressure.min(1.0).max(0.0);
+		let y = 5.0 * (1.0 - x).powi(20) - (x / 5.0) + (1.0 / 5.0);
+		self.blood_volume = (self.blood_volume - (y * delta_seconds)).min(1.0).max(0.0);
+
 		for entity_effect_type in EntityEffectType::all().into_iter() {
-			let stream_effects = entity_effect_type.stream_effect(self.get_effect(entity_effect_type));
+			let Some(entity_effect_type) = entity_effect_type else {
+				continue;
+			};
+			let effect_v = match entity_effect_type {
+				EntityEffectType::BloodPressure => {
+					// Blood volume isn't a real effect because the effect is time
+					// based. For stream_effect we combine blood pressure and blood
+					// volume values.
+					self.blood_pressure.min(self.blood_volume)
+				},
+				_ => self.get_effect(entity_effect_type),
+			};
+			let stream_effects = entity_effect_type.stream_effect(effect_v);
 			for (
 				entity_effect_type,
 				effect_val,
@@ -543,12 +579,19 @@ impl EntityEffects {
 			}
 		}
 		self.incapacitated = self.conciseness < 0.2;
+		self.dead = self.conciseness <= 0.0 || self.blood_pressure <= 0.0 || self.blood_volume <= 0.0;
 	}
 
-	pub fn incapacitated(
+	pub fn is_incapacitated(
 		&self,
 	) -> bool {
 		self.incapacitated
+	}
+
+	pub fn is_dead(
+		&self,
+	) -> bool {
+		self.dead
 	}
 }
 
@@ -584,8 +627,10 @@ impl PainScale {
 
 #[derive(Clone, Copy)]
 pub enum EntityEffectType {
-	/// Effects: Conciseness
+	/// Effects: BloodVolume, Conciseness
 	BloodPressure,
+	/// Effects: Conciseness
+	BloodVolume,
 	/// Effects: MovementSpeed
 	Conciseness,
 	/// Effects: MovementSpeed
@@ -598,18 +643,27 @@ impl EntityEffectType {
 	pub fn as_str(
 		&self,
 	) -> &'static str { match self {
-		Self::BloodPressure => "blood loss",
+		Self::BloodPressure => "blood pressure",
+		Self::BloodVolume => "blood volume",
 		Self::Conciseness => "conciseness",
 		Self::PainReceptors => "pain",
 		Self::MovementSpeed => "movement",
 	}}
 
 	pub fn all(
-	) -> Vec<Self> { vec![
-		Self::BloodPressure,
-		Self::Conciseness,
-		Self::PainReceptors,
-		Self::MovementSpeed,
+	) -> Vec<Option<Self>> { vec![
+		// NON-PERCENTAGE
+		Some(Self::PainReceptors),
+		None,
+
+		// CRITICAL
+		Some(Self::BloodPressure),
+		Some(Self::BloodVolume),
+		Some(Self::Conciseness),
+		None,
+
+		// LESS IMPORTANT
+		Some(Self::MovementSpeed),
 	]}
 
 	pub fn stream_effect(
@@ -617,6 +671,7 @@ impl EntityEffectType {
 		value: f32,
 	) -> Vec<(Self, EffectVal<f32>)> { match self {
 		Self::BloodPressure => vec![(Self::Conciseness, EffectVal::MaxPercentage(value))],
+		Self::BloodVolume => vec![],// Defects can't directly cause BloodVolume.
 		Self::Conciseness => vec![(Self::MovementSpeed, EffectVal::MaxPercentage(value * 2.0))],
 		Self::PainReceptors => vec![(Self::MovementSpeed, EffectVal::MaxPercentage(value * 2.0))],
 		Self::MovementSpeed => vec![],
@@ -876,7 +931,7 @@ impl RTEntityType {
 	}}
 
 	pub fn defects(
-		&mut self,
+		&self,
 	) -> Iter<DefectBodyPart> { match self {
 		Self::Human(rt_entity_human) => rt_entity_human.defects.defects(),
 	}}
@@ -1043,7 +1098,7 @@ impl RTEntity {
 				&mut rt_entity_human.attire,
 			)
 		};
-		self.recalculate_effects();
+		self.recalculate_effects(None);
 		damage_remainder
 	}
 
@@ -1052,13 +1107,16 @@ impl RTEntity {
 		delta_seconds: f32,
 	) {
 		self.rt_type.heal(delta_seconds);
-		self.recalculate_effects();
+		self.recalculate_effects(Some(delta_seconds));
 	}
 
 	pub fn recalculate_effects(
 		&mut self,
+		heal_tick_delta: Option<f32>,
 	) {
 		let mut entity_effects = EntityEffects::default();
+		entity_effects.blood_volume = self.effects.blood_volume;
+
 		for entity_effect in self.rt_type.effects().into_iter() {
 			let EffectVal::PercentagePointChange(_) = entity_effect.effect_val else {
 				continue;
@@ -1077,7 +1135,7 @@ impl RTEntity {
 			};
 			entity_effects.apply_effect(entity_effect);
 		}
-		entity_effects.process_downstream();
+		entity_effects.process_downstream(heal_tick_delta.unwrap_or_default());
 		self.effects = entity_effects;
 		self.effects.dirty = true;
 	}
@@ -1089,6 +1147,12 @@ impl RTEntity {
 		self.effects.dirty = false;
 		dirty
 	}
+
+	pub fn build_protocol_identifier(
+		&self,
+	) -> &ProtocolIdentifier { match &self.rt_type {
+		RTEntityType::Human(rt_entity_human) => &rt_entity_human.build.protocol_identifier,
+	}}
 }
 
 #[derive(Clone)]

@@ -62,6 +62,24 @@ impl<T> Clone for AtomicLockPtr<T> {
 	}
 }
 
+impl<T> Deref for AtomicLockPtr<T> {
+	type Target = AtomicLock<T>;
+
+	fn deref(
+		&self,
+	) -> &Self::Target { unsafe {
+		&*self.0
+	}}
+}
+
+impl<T> DerefMut for AtomicLockPtr<T> {
+	fn deref_mut(
+		&mut self,
+	) -> &mut Self::Target { unsafe {
+		&mut *self.0
+	}}
+}
+
 /// Heapped type for single thread use only.
 pub struct RawPtr<T: ?Sized>(*mut T);
 unsafe impl<T: ?Sized> Send for RawPtr<T> {}
@@ -74,18 +92,6 @@ impl<T> RawPtr<T> {
 			t,
 		)))
 	}
-
-	pub fn get(
-		&self,
-	) -> &T { unsafe {
-		self.0.as_ref().unwrap_unchecked()
-	}}
-
-	pub fn get_mut(
-		&mut self,
-	) -> &mut T { unsafe {
-		self.0.as_mut().unwrap_unchecked()
-	}}
 
 	// TODO: ARC? BOXRC? impl drop for this struct should be called on
 	// 		 all copies, which we dont want.
@@ -104,6 +110,24 @@ impl<T> RawPtr<T> {
 		&mut self,
 	) -> Box<T> { unsafe {
 		Box::from_raw(self.0)
+	}}
+}
+
+impl<T> Deref for RawPtr<T> {
+	type Target = T;
+
+	fn deref(
+		&self,
+	) -> &Self::Target { unsafe {
+		&*self.0
+	}}
+}
+
+impl<T> DerefMut for RawPtr<T> {
+	fn deref_mut(
+		&mut self,
+	) -> &mut Self::Target { unsafe {
+		&mut *self.0
 	}}
 }
 
@@ -188,13 +212,6 @@ impl AtomicSignalPtr {
 		)))
 	}
 
-	/// Gets the common `AtomicSignal`.
-	pub fn get(
-		&mut self,
-	) -> &mut AtomicSignal { unsafe {
-		self.0.as_mut().unwrap_unchecked()
-	}}
-
 	// TODO: ARC? BOXRC? impl drop for this struct should be called on
 	// 		 all copies, which we dont want.
 
@@ -213,6 +230,24 @@ impl Clone for AtomicSignalPtr {
 	fn clone(&self) -> Self {
 		*self
 	}
+}
+
+impl Deref for AtomicSignalPtr {
+	type Target = AtomicSignal;
+
+	fn deref(
+		&self,
+	) -> &Self::Target { unsafe {
+		&*self.0
+	}}
+}
+
+impl DerefMut for AtomicSignalPtr {
+	fn deref_mut(
+		&mut self,
+	) -> &mut Self::Target { unsafe {
+		&mut *self.0
+	}}
 }
 
 /// Determines sleep method for `AtomicSignal`.
